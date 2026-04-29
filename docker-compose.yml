@@ -1,0 +1,26 @@
+services:
+  dump-viewer:
+    build: .
+    container_name: dump-viewer
+    ipc: host
+    pid: host
+    ports:
+      - "${APP_HOST_IP:-10.0.211.102}:8000:8000"
+    volumes:
+      - ./config/config.yaml:/app/config/config.yaml
+      - type: bind
+        source: /
+        target: /hostfs
+        read_only: false
+      - type: bind
+        source: /totvs/database
+        target: /totvs/database
+        read_only: false
+      - type: bind
+        source: /totvs/temp
+        target: /totvs/temp
+        read_only: false
+      - /totvs/dba/progress/dlc12:/totvs/dba/progress/dlc12:ro
+      - /usr/dlc:/usr/dlc:ro
+      - /totvs/database/prod:/totvs/database/prod:ro
+    restart: unless-stopped

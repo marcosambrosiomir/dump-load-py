@@ -1,0 +1,73 @@
+catalog:
+  - step: 1
+    title: Verificar banco origem
+    kind: command
+    enabled: true
+    command: '{dlc_bin}/proutil {db_path} -C busy'
+    loop_source_path: ''
+    loop_source_file: ''
+    description: Identifica se o banco de origem está online ou offline.
+  - step: 2
+    title: Garantir destino do dump
+    kind: command
+    enabled: true
+    command: 'mkdir -p {dump_path}/{db_name}'
+    loop_source_path: ''
+    loop_source_file: ''
+    description: Cria a pasta específica do banco antes das etapas de dump.
+  - step: 3
+    title: Dump da DF
+    kind: command
+    enabled: true
+    command: '{dlc_bin}/_progres -db {db_path} {db_opts} -logfile {log_dir}/00_dumpdf.log -p 4gl/dumpdf.p -param {dump_path}/{db_name}'
+    loop_source_path: ''
+    loop_source_file: ''
+    description: Executa o dump da definição do banco.
+  - step: 4
+    title: Dump das sequences
+    kind: command
+    enabled: true
+    command: '{dlc_bin}/_progres -db {db_path} {db_opts} -logfile {log_dir}/00_dumpseq.log -p 4gl/dumpseq.p -param {dump_path}/{db_name}'
+    loop_source_path: ''
+    loop_source_file: ''
+    description: Executa o dump das sequences do banco origem.
+  - step: 5
+    title: Dump dos users
+    kind: command
+    enabled: true
+    command: '{dlc_bin}/_progres -db {db_path} {db_opts} -logfile {log_dir}/00_dumpuser.log -p 4gl/dumpuser.p -param {dump_path}/{db_name}'
+    loop_source_path: ''
+    loop_source_file: ''
+    description: Executa o dump da tabela _User.
+  - step: 6
+    title: Dump rules de permissão
+    kind: command
+    enabled: true
+    command: '{dlc_bin}/_progres -db {db_path} {db_opts} -logfile {log_dir}/00_dumpsec.log -p 4gl/dumpsec.p -param {dump_path}/{db_name}'
+    loop_source_path: ''
+    loop_source_file: ''
+    description: Executa o dump das regras de segurança e permissão.
+  - step: 7
+    title: Inventario tabelas
+    kind: command
+    enabled: true
+    command: '{dlc_bin}/_progres -db {db_path} {db_opts} -logfile {log_dir}/00_dumptbl.log -p 4gl/dumptbl.p -param {dump_path}/{db_name}'
+    loop_source_path: ''
+    loop_source_file: ''
+    description: Etapa de listagem de tabelas usada no passo 8.
+  - step: 8
+    title: Dump das tabela
+    kind: loop
+    enabled: true
+    command: '{dlc_bin}/proutil {db_path} -i -C dump {table_name} {dump_path}/{db_name} -T {temp_path}'
+    loop_source_path: '{dump_path}/{db_name}'
+    loop_source_file: tables.lst
+    description: Executa dump para cada tabela inventariada.
+  - step: 9
+    title: Tabanalys inicial
+    kind: command
+    enabled: true
+    command: '{dlc_bin}/proutil {db_path} -C tabanalys > {dump_path}/{db_name}/{db_name}_tab.ini'
+    loop_source_path: ''
+    loop_source_file: ''
+    description: Gera o tabanalys inicial do banco origem.

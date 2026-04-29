@@ -1,0 +1,10 @@
+﻿-d dmy
+-cpstream ibm850
+-cpterm iso8859-1
+-numsep 46
+-numdec 44
+-inp 32000
+-tok 16000
+-noincrwarn
+-E
+-stsh 31

@@ -1,0 +1,13 @@
+progress:
+  dlc: /totvs/dba/progress/dlc12
+  proenv: /totvs/dba/progress/dlc12/bin/proenv
+databases:
+- dump_db_path: /totvs/database/CON
+  db_mask: '*.db'
+  dump_path: /totvs/database/dump/CON
+  load_path: /totvs/database/load/CON
+dump:
+  output_dir: /totvs/temp
+  threads_per_db: 2
+execution:
+  max_parallel_dbs: 2
