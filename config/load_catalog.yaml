@@ -1,89 +1,99 @@
 catalog:
-  - step: 1
-    title: Conferencia da pasta do destino
-    kind: command
-    enabled: true
-    command: 'mkdir -p {load_path} && mkdir -p {dump_path}/{db_name}/logs'
-    loop_source_path: ''
-    loop_source_file: ''
-    description: Confere se a pasta de destino do load existe e esta preparada.
-  - step: 2
-    title: Criacao do banco do destino
-    kind: command
-    enabled: true
-    command: 'cd {load_path} && echo y | {dlc_bin}/procopy {resolved_dlc_path}/empty8 {db_name}'
-    loop_source_path: ''
-    loop_source_file: ''
-    description: Cria o banco de destino antes das etapas de carga.
-  - step: 3
-    title: Load do df do banco destino
-    kind: command
-    enabled: true
-    command: '{dlc_bin}/_progres -db {load_path}/{db_name} {db_opts} -logfile {log_dir}/03_loaddf.log -p 4gl/loaddf.p -param {dump_path}/{db_name}/{db_name}.df'
-    loop_source_path: ''
-    loop_source_file: ''
-    description: Executa o load da definicao do banco destino.
-  - step: 4
-    title: Load de usuarios(_users) do banco destino
-    kind: command
-    enabled: true
-    command: '{dlc_bin}/_progres -db {load_path}/{db_name} {db_opts} -logfile {log_dir}/04_loaduser.log -p 4gl/loaduser.p -param {dump_path}/{db_name}/_User.d'
-    loop_source_path: ''
-    loop_source_file: ''
-    description: Executa o load dos usuarios do banco destino.
-  - step: 5
-    title: Load de sequences(_seqvals) do banco destino
-    kind: command
-    enabled: true
-    command: '{dlc_bin}/_progres -db {load_path}/{db_name} {db_opts} -logfile {log_dir}/05_loadseq.log -p 4gl/loadseq.p -param {dump_path}/{db_name}'
-    loop_source_path: ''
-    loop_source_file: ''
-    description: Executa o load das sequences do banco destino.
-  - step: 6
-    title: Load de rules do banco destino
-    kind: command
-    enabled: true
-    command: '{dlc_bin}/_progres -db {load_path}/{db_name} {db_opts} -logfile {log_dir}/06_loadsec.log -p 4gl/loadsec.p -param {dump_path}/{db_name}'
-    loop_source_path: ''
-    loop_source_file: ''
-    description: Executa o load das regras de permissao do banco destino.
-  - step: 8
-    title: Truncate de BI do banco destino
-    kind: command
-    enabled: true
-    command: '{dlc_bin}/proutil {load_path}/{db_name} -C truncate bi'
-    loop_source_path: ''
-    loop_source_file: ''
-    description: Executa o truncate do BI no banco destino.
-  - step: 9
-    title: Truncate de AI do banco destino
-    kind: command
-    enabled: true
-    command: '{dlc_bin}/rfutil {load_path}/{db_name} -C aimage extent truncate || echo "AI truncate ignorado para {db_name}"'
-    loop_source_path: ''
-    loop_source_file: ''
-    description: Executa o truncate do AI no banco destino.
-  - step: 10
-    title: Load de tabelas do banco destino
-    kind: loop
-    enabled: true
-    command: '{dlc_bin}/proutil {load_path}/{db_name} -i -C load {dump_path}/{db_name}/{table_name}.bd -T {temp_path}'
-    loop_source_path: '{dump_path}/{db_name}'
-    loop_source_file: tables.lst
-    description: Executa o load para cada tabela prevista para o banco destino.
-  - step: 11
-    title: Indexacao do banco destino
-    kind: command
-    enabled: true
-    command: '{dlc_bin}/proutil {load_path}/{db_name} -C idxbuild all -SG 16 -TB 64 -TM 32 -TMB 128 -B 16000 -TF 88 -thread 1 -threadnum 6 -mergethreads 4 -datascanthreads 4 -pfactor 90 -rusage -T {temp_path}'
-    loop_source_path: ''
-    loop_source_file: ''
-    description: Executa a indexacao do banco destino apos a carga.
-  - step: 12
-    title: Geracao do Tabanalys do banco destino
-    kind: command
-    enabled: true
-    command: '{dlc_bin}/proutil {load_path}/{db_name} -C tabanalys -s 8192 -T {temp_path} > {load_path}/{db_name}_tab.fim'
-    loop_source_path: ''
-    loop_source_file: ''
-    description: Gera o tabanalys final do banco destino.
+- command: mkdir -p {load_path} && mkdir -p {dump_path}/{db_name}/logs
+  description: Confere se a pasta de destino do load existe e esta preparada.
+  enabled: false
+  kind: command
+  loop_source_file: ''
+  loop_source_path: ''
+  step: 1
+  title: Conferencia da pasta do destino
+- command: cd {load_path} && echo y | {dlc_bin}/procopy {resolved_dlc_path}/empty8
+    {db_name}
+  description: Cria o banco de destino antes das etapas de carga.
+  enabled: false
+  kind: command
+  loop_source_file: ''
+  loop_source_path: ''
+  step: 2
+  title: Criacao do banco do destino
+- command: '{dlc_bin}/_progres -db {load_path}/{db_name} {db_opts} -logfile {log_dir}/03_loaddf.log
+    -p 4gl/loaddf.p -param {dump_path}/{db_name}/{db_name}.df'
+  description: Executa o load da definicao do banco destino.
+  enabled: true
+  kind: command
+  loop_source_file: ''
+  loop_source_path: ''
+  step: 3
+  title: Load do df do banco destino
+- command: '{dlc_bin}/_progres -db {load_path}/{db_name} {db_opts} -logfile {log_dir}/04_loaduser.log
+    -p 4gl/loaduser.p -param {dump_path}/{db_name}/_User.d'
+  description: Executa o load dos usuarios do banco destino.
+  enabled: false
+  kind: command
+  loop_source_file: ''
+  loop_source_path: ''
+  step: 4
+  title: Load de usuarios(_users) do banco destino
+- command: '{dlc_bin}/_progres -db {load_path}/{db_name} {db_opts} -logfile {log_dir}/05_loadseq.log
+    -p 4gl/loadseq.p -param {dump_path}/{db_name}'
+  description: Executa o load das sequences do banco destino.
+  enabled: false
+  kind: command
+  loop_source_file: ''
+  loop_source_path: ''
+  step: 5
+  title: Load de sequences(_seqvals) do banco destino
+- command: '{dlc_bin}/_progres -db {load_path}/{db_name} {db_opts} -logfile {log_dir}/06_loadsec.log
+    -p 4gl/loadsec.p -param {dump_path}/{db_name}'
+  description: Executa o load das regras de permissao do banco destino.
+  enabled: false
+  kind: command
+  loop_source_file: ''
+  loop_source_path: ''
+  step: 6
+  title: Load de rules do banco destino
+- command: '{dlc_bin}/proutil {load_path}/{db_name} -C truncate bi'
+  description: Executa o truncate do BI no banco destino.
+  enabled: false
+  kind: command
+  loop_source_file: ''
+  loop_source_path: ''
+  step: 8
+  title: Truncate de BI do banco destino
+- command: '{dlc_bin}/rfutil {load_path}/{db_name} -C aimage extent truncate || echo
+    "AI truncate ignorado para {db_name}"'
+  description: Executa o truncate do AI no banco destino.
+  enabled: false
+  kind: command
+  loop_source_file: ''
+  loop_source_path: ''
+  step: 9
+  title: Truncate de AI do banco destino
+- command: '{dlc_bin}/proutil {load_path}/{db_name} -i -C load {dump_path}/{db_name}/{table_name}.bd
+    -T {temp_path}'
+  description: Executa o load para cada tabela prevista para o banco destino.
+  enabled: false
+  kind: loop
+  loop_source_file: tables.lst
+  loop_source_path: '{dump_path}/{db_name}'
+  step: 10
+  title: Load de tabelas do banco destino
+- command: '{dlc_bin}/proutil {load_path}/{db_name} -C idxbuild all -SG 16 -TB 64
+    -TM 32 -TMB 128 -B 16000 -TF 88 -thread 1 -threadnum 6 -mergethreads 4 -datascanthreads
+    4 -pfactor 90 -rusage -T {temp_path}'
+  description: Executa a indexacao do banco destino apos a carga.
+  enabled: false
+  kind: command
+  loop_source_file: ''
+  loop_source_path: ''
+  step: 11
+  title: Indexacao do banco destino
+- command: '{dlc_bin}/proutil {load_path}/{db_name} -C tabanalys -s 8192 -T {temp_path}
+    > {load_path}/{db_name}_tab.fim'
+  description: Gera o tabanalys final do banco destino.
+  enabled: false
+  kind: command
+  loop_source_file: ''
+  loop_source_path: ''
+  step: 12
+  title: Geracao do Tabanalys do banco destino

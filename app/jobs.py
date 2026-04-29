@@ -21,6 +21,7 @@ INDEX_PATH = os.path.join(RUNTIME_DIR, "index.json")
 DEFAULT_TAIL_LINES = 200
 
 _LOCK = threading.RLock()
+_ELAPSED_ONLY_LINE = re.compile(r'^\d{2}:\d{2}:\d{2}$')
 
 
 _SECONDARY_ERROR_PATTERNS = (
@@ -106,9 +107,22 @@ def _save_state(job_id, state):
 
 def _append_log(job_id, line):
     with _LOCK:
+        normalized_line = (line or "").rstrip()
         os.makedirs(LOGS_DIR, exist_ok=True)
-        with open(_log_path(job_id), "a", encoding="utf-8") as handle:
-            handle.write(line.rstrip() + "\n")
+        log_path = _log_path(job_id)
+
+        if _ELAPSED_ONLY_LINE.match(normalized_line) and os.path.exists(log_path):
+            with open(log_path, "r", encoding="utf-8", errors="replace") as handle:
+                lines = handle.read().splitlines()
+
+            if lines and not _ELAPSED_ONLY_LINE.search(lines[-1]):
+                lines[-1] = f"{lines[-1].rstrip()} {normalized_line}".rstrip()
+                with open(log_path, "w", encoding="utf-8") as handle:
+                    handle.write("\n".join(lines) + "\n")
+                return
+
+        with open(log_path, "a", encoding="utf-8") as handle:
+            handle.write(normalized_line + "\n")
 
 
 def _replace_last_log_line(job_id, expected_line, new_line):
@@ -437,6 +451,9 @@ def _resolve_write_path(base_path):
     if base_path.startswith(HOST_ROOT_MOUNT.rstrip("/") + "/") or base_path == HOST_ROOT_MOUNT:
         return base_path
 
+    if base_path == "/totvs/database" or base_path.startswith("/totvs/database/"):
+        return base_path
+
     return os.path.join(HOST_ROOT_MOUNT, base_path.lstrip("/"))
 
 
@@ -448,10 +465,18 @@ def _extract_follow_log_path(command):
     return ""
 
 
-def _step_transcript_path(item, db_exec_path, step_number, step_title):
+def _step_log_dir(dump_path, load_path, db_name, operation):
+    if operation == "load":
+        return os.path.join(load_path, f"logs_{db_name}")
+
+    return os.path.join(dump_path, db_name, "logs")
+
+
+def _step_transcript_path(item, db_exec_path, step_number, step_title, operation="dump"):
     db_name = _database_name_from_path(db_exec_path)
     dump_path = item.get("dump_path", "") or os.path.join("/totvs/database/dump", db_name)
-    log_dir = os.path.join(dump_path, db_name, "logs")
+    load_path = item.get("load_path", "") or os.path.join("/totvs/database/load", db_name)
+    log_dir = _step_log_dir(dump_path, load_path, db_name, operation)
     step_token = _sanitize_log_token(f"{step_number}_{step_title}")
     return os.path.join(log_dir, f"{step_token}.cmd.log")
 
@@ -608,7 +633,7 @@ def _safe_format(template, context):
         return template
 
 
-def _build_preview_context(item, config, db_exec_path):
+def _build_preview_context(item, config, db_exec_path, operation="dump"):
     db_root_path = item.get("dump_db_path", "") or ""
     db_name = _database_name_from_path(db_exec_path)
     dump_path = item.get("dump_path", "") or os.path.join("/totvs/database/dump", db_name)
@@ -632,7 +657,7 @@ def _build_preview_context(item, config, db_exec_path):
         "load_path": resolved_load_path,
         "load_path_source": load_path,
         "temp_path": config.get("dump", {}).get("output_dir", "") or "/tmp",
-        "log_dir": os.path.join(resolved_dump_path, db_name, "logs"),
+        "log_dir": _step_log_dir(resolved_dump_path, resolved_load_path, db_name, operation),
         "dlc_bin": dlc_bin,
         "dlc_path": dlc_path,
         "resolved_dlc_path": resolved_dlc_path,
@@ -738,6 +763,45 @@ def _simulate_exit_code(step_number, command):
 
 def _is_busy_check_command(command):
     return "-C busy" in (command or "")
+
+
+def _is_load_progress_command(operation, command, context):
+    if operation != "load":
+        return False
+
+    load_db_path = os.path.join(context.get("load_path") or "", context.get("db_name") or "")
+    if not load_db_path:
+        return False
+
+    return "_progres" in (command or "") and f"-db {load_db_path}" in (command or "")
+
+
+def _apply_load_busy_context(job_id, context, db_log, transcript_path):
+    busy_command = f"{context.get('dlc_bin', '')}/proutil {context.get('load_path', '')}/{context.get('db_name', '')} -C busy"
+    rc = _run_shell_command(
+        job_id,
+        busy_command,
+        raw_log_path=transcript_path,
+        heartbeat_label=f"{context.get('db_name', '')} Verificacao do banco destino",
+    )
+    busy_info = _busy_execution_options(rc)
+    if not busy_info["valid"]:
+        if rc == 64:
+            db_log("Banco de destino em processo de inicialização; execução interrompida")
+        else:
+            db_log(f"Status do banco de destino não reconhecido ({rc}); execução interrompida")
+        return False
+
+    context.update({
+        "db_status": busy_info["db_status"],
+        "db_opts": busy_info["db_opts"],
+        "load_db_opts_checked": True,
+    })
+    if busy_info["busy_state"] == "online":
+        db_log("Banco de destino online confirmado")
+    else:
+        db_log("Banco de destino offline confirmado; comandos Progress seguirão com -1")
+    return True
 
 
 def _catalog_operation_name(catalog):
@@ -854,7 +918,7 @@ def _run_dry_job(job_id, config, catalog):
             total_files = len(matching_files)
             for file_index, file_path in enumerate(matching_files, start=1):
                 db_exec_path = os.path.splitext(file_path)[0]
-                context = _build_preview_context(item, config, db_exec_path)
+                context = _build_preview_context(item, config, db_exec_path, operation=operation)
                 _append_log(job_id, f"[DRY-RUN] Database {file_index}/{total_files}: {context['db_path']}")
 
                 for step in steps:
@@ -952,7 +1016,8 @@ def _run_real_job(job_id, config, catalog):
                 db_exec_path = os.path.splitext(file_path)[0]
                 db_name = os.path.basename(db_exec_path)
                 db_log = lambda msg, _jid=job_id, _n=db_name: _append_log(_jid, f"[EXEC] {_n} {msg}")
-                context = _build_preview_context(item, config, db_exec_path)
+                context = _build_preview_context(item, config, db_exec_path, operation=operation)
+                context["load_db_opts_checked"] = False
 
                 if operation == "load":
                     prerequisite_messages = _load_prerequisite_messages(context)
@@ -974,6 +1039,13 @@ def _run_real_job(job_id, config, catalog):
                     step_title = step.get("title", f"Fase {step_number}")
                     step_kind = step.get("kind", "command")
                     command = _safe_format(step.get("command", ""), context)
+
+                    if _is_load_progress_command(operation, command, context) and not context.get("load_db_opts_checked"):
+                        busy_transcript_path = _step_transcript_path(item, db_exec_path, step_number, "Verificar_banco_destino", operation=operation)
+                        if not _apply_load_busy_context(job_id, context, db_log, busy_transcript_path):
+                            item_failed = True
+                            break
+                        command = _safe_format(step.get("command", ""), context)
 
                     # Para passos com redirecionamento (> arquivo), extrai e exibe o destino
                     redir_match = re.search(r'>\s*(\S+)', command)
@@ -1019,7 +1091,7 @@ def _run_real_job(job_id, config, catalog):
                                 message=f"Tabela atual: {table_name} ({table_index}/{total_tables})",
                             )
                             db_log(f"{table_action} da tabela {table_name} - executando")
-                            transcript_path = _step_transcript_path(item, db_exec_path, step_number, f"{step_title}_{table_name}")
+                            transcript_path = _step_transcript_path(item, db_exec_path, step_number, f"{step_title}_{table_name}", operation=operation)
                             rc = _run_shell_command(
                                 job_id,
                                 loop_command,
@@ -1046,7 +1118,7 @@ def _run_real_job(job_id, config, catalog):
                         db_log(f"Passo {step_number} - Concluido...")
                         continue
 
-                    transcript_path = _step_transcript_path(item, db_exec_path, step_number, step_title)
+                    transcript_path = _step_transcript_path(item, db_exec_path, step_number, step_title, operation=operation)
                     if step_number == 1 and _is_busy_check_command(command):
                         # Passo 1: não emite 'Executando...' nem stdout no log principal
                         follow_log_path = _extract_follow_log_path(command)
@@ -1259,6 +1331,15 @@ def get_job_log_chunk(job_id, offset=0):
         handle.seek(pos)
         raw = handle.read()
         new_offset = handle.tell()
+
+    if raw and not raw.endswith(b"\n"):
+        last_newline = raw.rfind(b"\n")
+        if last_newline >= 0:
+            raw = raw[: last_newline + 1]
+            new_offset = pos + last_newline + 1
+        else:
+            raw = b""
+            new_offset = pos
 
     chunk = raw.decode("utf-8", errors="replace")
     return chunk, new_offset
