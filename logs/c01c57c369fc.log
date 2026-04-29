@@ -1,0 +1,11 @@
+[EXEC] Job criado
+[EXEC] Bancos selecionados: 1
+[EXEC] Iniciando execução real da sequência
+[EXEC] Bancos selecionados: 1
+[EXEC] Banco 1/1: /totvs/database/CON/emsfnd.db
+[EXEC] emsfnd Arquivo de estrutura corrigido para usar o diretório de load /totvs/database/load/CON: linha 2: /totvs/database/CON/emsfnd.b1 -> /totvs/database/load/CON/emsfnd.b1; linha 3: /totvs/database/CON/emsfnd.b2 -> /totvs/database/load/CON/emsfnd.b2; linha 5: /totvs/database/CON/emsfnd.d1 -> /totvs/database/load/CON/emsfnd.d1; linha 7: /totvs/database/CON/emsfnd_7.d1 -> /totvs/database/load/CON/emsfnd_7.d1; linha 8: /totvs/database/CON/emsfnd_7.d2 -> /totvs/database/load/CON/emsfnd_7.d2; e mais 10 registro(s)
+[EXEC] emsfnd Confira visualmente o arquivo .st ajustado antes de prosseguir
+[EXEC] emsfnd Processo abortado após os ajustes; execute novamente se aceitar as correções feitas
+[EXEC] emsfnd Criação do banco abortada pelos critérios obrigatórios da fase de load
+[EXEC] Tempo total de LOAD para o banco emsfnd.db: 0m00s
+[EXEC] Execução finalizada

@@ -1,0 +1,34 @@
+{
+  "job_id": "9a38a9599fb4",
+  "status": "completed",
+  "operation": "dump",
+  "mode": "real",
+  "message": "Execução concluída",
+  "created_at": "2026-04-29T21:28:33.364117+00:00",
+  "started_at": "2026-04-29T21:28:33.364914+00:00",
+  "finished_at": "2026-04-29T21:31:30.220804+00:00",
+  "updated_at": "2026-04-29T21:31:30.220848+00:00",
+  "items": [
+    {
+      "dump_db_path": "/totvs/database/CON",
+      "db_mask": "emsfnd.db",
+      "dump_path": "/totvs/database/dump/CON",
+      "load_path": "/totvs/database/load/CON",
+      "selected_file_path": "/totvs/database/CON/emsfnd.db",
+      "status": "done",
+      "progress": 100,
+      "message": "Execução concluída"
+    }
+  ],
+  "log_path": "/app/logs/9a38a9599fb4.log",
+  "total_dbs": 1,
+  "completed_dbs": 1,
+  "running_dbs": 0,
+  "offline_dbs": 0,
+  "failed_dbs": 0,
+  "overall_progress": 100,
+  "active_dbs": [],
+  "selected_count": 1,
+  "selected_file_count": 1,
+  "active_labels": []
+}

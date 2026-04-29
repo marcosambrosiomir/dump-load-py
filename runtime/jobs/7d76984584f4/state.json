@@ -1,0 +1,48 @@
+{
+  "job_id": "7d76984584f4",
+  "status": "failed",
+  "operation": "dump",
+  "mode": "real",
+  "message": "Execução interrompida após reinício do serviço",
+  "created_at": "2026-04-29T21:13:18.056682+00:00",
+  "started_at": "2026-04-29T21:13:18.057565+00:00",
+  "finished_at": "2026-04-29T21:27:08.126059+00:00",
+  "updated_at": "2026-04-29T21:27:08.126059+00:00",
+  "items": [
+    {
+      "dump_db_path": "/totvs/database/CON",
+      "db_mask": "ems2adt.db",
+      "dump_path": "/totvs/database/dump/CON",
+      "load_path": "/totvs/database/load/CON",
+      "selected_file_path": "/totvs/database/CON/ems2adt.db",
+      "status": "done",
+      "progress": 100,
+      "message": "Execução concluída"
+    },
+    {
+      "dump_db_path": "/totvs/database/CON",
+      "db_mask": "emsfnd.db",
+      "dump_path": "/totvs/database/dump/CON",
+      "load_path": "/totvs/database/load/CON",
+      "selected_file_path": "/totvs/database/CON/emsfnd.db",
+      "status": "error",
+      "progress": 100,
+      "message": "Execução interrompida após reinício do serviço"
+    }
+  ],
+  "log_path": "/app/logs/7d76984584f4.log",
+  "total_dbs": 2,
+  "completed_dbs": 1,
+  "running_dbs": 1,
+  "offline_dbs": 0,
+  "failed_dbs": 0,
+  "overall_progress": 100,
+  "active_dbs": [
+    "/totvs/database/CON"
+  ],
+  "selected_count": 2,
+  "selected_file_count": 2,
+  "active_labels": [
+    "Passo 8 concluído"
+  ]
+}

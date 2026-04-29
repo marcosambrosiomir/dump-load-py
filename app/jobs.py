@@ -19,6 +19,7 @@ RUNTIME_DIR = os.path.join(BASE_DIR, "runtime")
 JOBS_DIR = os.path.join(RUNTIME_DIR, "jobs")
 INDEX_PATH = os.path.join(RUNTIME_DIR, "index.json")
 DEFAULT_TAIL_LINES = 200
+PROCESS_STARTED_AT = ""
 
 _LOCK = threading.RLock()
 _ELAPSED_ONLY_LINE = re.compile(r'^\d{2}:\d{2}:\d{2}$')
@@ -44,6 +45,9 @@ def _utc_now():
     return datetime.now(timezone.utc).isoformat()
 
 
+PROCESS_STARTED_AT = _utc_now()
+
+
 def ensure_runtime_dirs():
     os.makedirs(JOBS_DIR, exist_ok=True)
     os.makedirs(LOGS_DIR, exist_ok=True)
@@ -63,6 +67,25 @@ def _safe_write_json(path, data):
     with open(temporary_path, "w", encoding="utf-8") as handle:
         json.dump(data, handle, ensure_ascii=False, indent=2)
     os.replace(temporary_path, path)
+
+
+def _resolve_workspace_path(path, default_path=""):
+    candidate = (path or "").strip()
+    if not candidate:
+        return default_path
+
+    if os.path.exists(candidate):
+        return candidate
+
+    if candidate == "/app/logs" or candidate.startswith("/app/logs/"):
+        translated = os.path.join(LOGS_DIR, candidate[len("/app/logs/"):]) if candidate != "/app/logs" else LOGS_DIR
+        return translated
+
+    if candidate == "/app/runtime" or candidate.startswith("/app/runtime/"):
+        translated = os.path.join(RUNTIME_DIR, candidate[len("/app/runtime/"):]) if candidate != "/app/runtime" else RUNTIME_DIR
+        return translated
+
+    return candidate
 
 
 def _index_data():
@@ -98,11 +121,55 @@ def _command_log_path(command_name, db_name):
 
 
 def _read_state(job_id):
-    return _safe_load_json(_state_path(job_id), None)
+    state = _safe_load_json(_state_path(job_id), None)
+    if not state:
+        return None
+
+    state["log_path"] = _resolve_workspace_path(state.get("log_path"), _log_path(job_id))
+    return state
 
 
 def _save_state(job_id, state):
+    state = dict(state or {})
+    state["log_path"] = _log_path(job_id)
     _safe_write_json(_state_path(job_id), state)
+
+
+def _reconcile_stale_active_job():
+    index = _index_data()
+    active_job_id = index.get("active_job_id")
+    if not active_job_id:
+        return
+
+    state = _read_state(active_job_id)
+    if not state:
+        index["active_job_id"] = None
+        _save_index(index)
+        return
+
+    if state.get("status") not in ("queued", "running"):
+        return
+
+    updated_at = state.get("updated_at") or state.get("started_at") or state.get("created_at") or ""
+    if updated_at and updated_at >= PROCESS_STARTED_AT:
+        return
+
+    for item in state.get("items", []):
+        if item.get("status") == "running":
+            item["status"] = "error"
+            item["message"] = "Execução interrompida após reinício do serviço"
+
+    state["status"] = "failed"
+    state["message"] = "Execução interrompida após reinício do serviço"
+    state["finished_at"] = _utc_now()
+    state["updated_at"] = state["finished_at"]
+    _save_state(active_job_id, state)
+    _append_log(active_job_id, "[EXEC] Execução interrompida após reinício do serviço")
+    _append_log(active_job_id, "[EXEC] Execução finalizada")
+
+    index["active_job_id"] = None
+    index["last_job_id"] = active_job_id
+    _save_index(index)
 
 
 def _append_log(job_id, line):
@@ -164,8 +231,14 @@ def _touch_file(path):
         pass
 
 
-# Regex para capturar contadores de registros descarregados/despejados
-_RE_RECORD_COUNT = re.compile(r'(\d[\d .]*)\s*registros\s+des(?:carregados|pejados)')
+def _reset_path_log(path):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8"):
+        pass
+
+
+# Regex para capturar contadores de registros de dump/load
+_RE_RECORD_COUNT = re.compile(r'(\d[\d .]*)\s*registros\s+(?:des(?:carregados|pejados)|processados)')
 
 # Estado de progresso por job_id
 _progress_state = {}
@@ -239,20 +312,8 @@ def _append_file_tail(job_id, path, positions):
     state = _progress_state.setdefault(job_id, {'last_count': None, 'heartbeat_label': None, 'started_at': time.monotonic()})
 
     for line in chunk.splitlines():
-        if not line.strip():
+        if _consume_progress_output_line(job_id, line):
             continue
-        # Filtra linhas de ruído do Progress runtime log
-        if re.search(r'\d{2}/\d{2}/\d{2}@\d{2}:\d{2}:\d{2}\.\d+\+\d+.*Logging level set to', line):
-            continue
-        if _PROGRESS_OUTPUT_NOISE.search(line):
-            # Guarda a contagem para emitir apenas no final da tabela
-            m = _RE_RECORD_COUNT.search(line)
-            if m:
-                count = m.group(1).strip().replace(' ', '').replace('.', '')
-                state['last_count'] = count
-            continue
-        # Se havia contagem pendente, emite total final antes da próxima linha real
-        _flush_progress_count(job_id)
         _append_log(job_id, line)
 
 
@@ -308,11 +369,45 @@ _PROGRESS_OUTPUT_NOISE = re.compile(
     r'OpenEdge Release'
     r'|Usando .ndice.*para despejo'
     r'|\d+ registros despejados'
+    r'|\d+ registros processados'
     r'|Dump binario completo'
     r'|Dump bin.rio completo'
     r'|\*\* O banco .* sendo usado em modo multi'
     r'|\d[\d ]*registros descarregados'
 )
+
+_LOAD_PROGRESS_NOISE = re.compile(
+    r'^\*\* Esta sess.*-i'
+    r'|^Binary Dump created on '
+    r'|^from database '
+    r'|^Carregando a tabela .*Numero da tabela '
+    r'|^ com registro .*sess'
+)
+
+_LOAD_BINARY_CREATED_LINE = re.compile(r'^Binary Dump created on (.*)$')
+_LOAD_SOURCE_DATABASE_LINE = re.compile(r'^from database (.*)\. \((\d+)\)$')
+_LOAD_TABLE_START_LINE = re.compile(r'^Carregando a tabela (.*), Numero da tabela (\d+)')
+_LOAD_RECORD_START_LINE = re.compile(r'^com registro (\d+), sessao (\d+)\. \((\d+)\)')
+
+
+def _consume_progress_output_line(job_id, line):
+    if not line.strip():
+        return True
+
+    state = _progress_state.setdefault(job_id, {'last_count': None, 'heartbeat_label': None, 'started_at': time.monotonic()})
+
+    if re.search(r'\d{2}/\d{2}/\d{2}@\d{2}:\d{2}:\d{2}\.\d+\+\d+.*Logging level set to', line):
+        return True
+
+    if _PROGRESS_OUTPUT_NOISE.search(line) or _LOAD_PROGRESS_NOISE.search(line):
+        match = _RE_RECORD_COUNT.search(line)
+        if match:
+            count = match.group(1).strip().replace(' ', '').replace('.', '')
+            state['last_count'] = count
+        return True
+
+    _flush_progress_count(job_id)
+    return False
 
 
 def _append_command_output(job_id, raw_log_path, output_text):
@@ -320,11 +415,9 @@ def _append_command_output(job_id, raw_log_path, output_text):
         return
 
     for line in output_text.splitlines():
-        if not line.strip():
-            continue
         if raw_log_path:
             _append_path_log(raw_log_path, line)
-        if _PROGRESS_OUTPUT_NOISE.search(line):
+        if _consume_progress_output_line(job_id, line):
             continue
         _append_log(job_id, line)
         if _is_secondary_error_line(line):
@@ -339,7 +432,7 @@ def _run_shell_command(job_id, command, follow_log_path=None, raw_log_path=None,
     if label:
         _append_log(job_id, label.replace(command, prepared_command) if command else label)
     if raw_log_path:
-        _touch_file(raw_log_path)
+        _reset_path_log(raw_log_path)
         _append_path_log(raw_log_path, f"[START] {label or prepared_command}")
         _append_path_log(raw_log_path, f"[CMD] {prepared_command}")
         for diagnostic_line in _command_diagnostics(prepared_command):
@@ -370,18 +463,19 @@ def _run_shell_command(job_id, command, follow_log_path=None, raw_log_path=None,
     )
 
     positions = {}
+    raw_positions = {}
     while process.poll() is None:
         if follow_log_path:
             _append_file_tail(job_id, follow_log_path, positions)
             if raw_log_path and raw_log_path != follow_log_path:
-                _append_file_tail_to_path(follow_log_path, positions, raw_log_path)
+                _append_file_tail_to_path(follow_log_path, raw_positions, raw_log_path)
         time.sleep(0.3)
 
     # Leitura final após término
     if follow_log_path:
         _append_file_tail(job_id, follow_log_path, positions)
         if raw_log_path and raw_log_path != follow_log_path:
-            _append_file_tail_to_path(follow_log_path, positions, raw_log_path)
+            _append_file_tail_to_path(follow_log_path, raw_positions, raw_log_path)
 
     _flush_progress_count(job_id)
 
@@ -401,6 +495,8 @@ def _run_shell_command(job_id, command, follow_log_path=None, raw_log_path=None,
 
     if raw_log_path:
         _append_path_log(raw_log_path, f"[EXIT] rc={process.returncode}")
+        if process.returncode != 0:
+            _append_failure_context(job_id, raw_log_path, process.returncode)
         if process.returncode == 127:
             _append_path_log(
                 raw_log_path,
@@ -422,6 +518,80 @@ def _tail_log(log_path, limit=DEFAULT_TAIL_LINES):
         return lines[-limit:]
 
     return lines
+
+
+def _normalize_failure_summary_line(line):
+    normalized = (line or "").strip()
+    if not normalized:
+        return ""
+
+    match = _LOAD_BINARY_CREATED_LINE.match(normalized)
+    if match:
+        return f"LOAD iniciou a leitura do dump binario criado em {match.group(1)}"
+
+    match = _LOAD_SOURCE_DATABASE_LINE.match(normalized)
+    if match:
+        database_path, code = match.groups()
+        return f"LOAD usando dump gerado do banco {database_path}. ({code})"
+
+    match = _LOAD_TABLE_START_LINE.match(normalized)
+    if match:
+        table_name, table_number = match.groups()
+        return f"LOAD iniciado para tabela {table_name} (numero {table_number})"
+
+    match = _LOAD_RECORD_START_LINE.match(normalized)
+    if match:
+        record_number, session_number, code = match.groups()
+        return f"LOAD entrou no processamento no registro {record_number}, sessao {session_number}. ({code})"
+
+    return normalized
+
+
+def _failure_summary_lines(raw_log_path, limit=6):
+    if not raw_log_path or not os.path.exists(raw_log_path):
+        return []
+
+    try:
+        with open(raw_log_path, "r", encoding="utf-8", errors="replace") as handle:
+            lines = [line.rstrip() for line in handle.readlines()]
+    except OSError:
+        return []
+
+    summary = []
+    seen = set()
+    for line in reversed(lines):
+        normalized = (line or "").strip()
+        if not normalized:
+            continue
+        if normalized.startswith("[START]") or normalized.startswith("[CMD]") or normalized.startswith("[DIAG]") or normalized.startswith("[EXIT]"):
+            continue
+        summary_line = _normalize_failure_summary_line(normalized)
+        if not summary_line:
+            continue
+        if _PROGRESS_OUTPUT_NOISE.search(normalized):
+            continue
+        if _LOAD_PROGRESS_NOISE.search(normalized) and summary_line == normalized:
+            continue
+        if summary_line in seen:
+            continue
+        seen.add(summary_line)
+        summary.append(summary_line)
+        if len(summary) >= limit:
+            break
+
+    summary.reverse()
+    return summary
+
+
+def _append_failure_context(job_id, raw_log_path, return_code):
+    summary_lines = _failure_summary_lines(raw_log_path)
+    if not summary_lines:
+        _append_log(job_id, f"[ERRO] comando finalizado com rc={return_code}")
+        return
+
+    _append_log(job_id, f"[ERRO] resumo da falha (rc={return_code}):")
+    for line in summary_lines:
+        _append_log(job_id, f"[ERRO] {line}")
 
 HOST_ROOT_MOUNT = os.environ.get("HOST_ROOT_MOUNT", "/hostfs")
 
@@ -681,7 +851,7 @@ def _ensure_execution_directories(context):
         os.makedirs(log_dir, exist_ok=True)
 
 
-def _load_prerequisite_messages(context):
+def _load_prerequisite_messages(context, allow_structure_fix=True):
     load_path = context.get("load_path") or ""
     target_load_path = context.get("load_path_source") or load_path
     db_name = context.get("db_name") or ""
@@ -727,7 +897,7 @@ def _load_prerequisite_messages(context):
 
             rewritten_lines.append(rewritten_line)
 
-    if invalid_extent_paths:
+    if invalid_extent_paths and allow_structure_fix:
         with open(structure_path, "w", encoding="utf-8") as handle:
             handle.writelines(rewritten_lines)
 
@@ -745,6 +915,20 @@ def _load_prerequisite_messages(context):
         messages.append("Confira visualmente o arquivo .st ajustado antes de prosseguir")
         messages.append("Processo abortado após os ajustes; execute novamente se aceitar as correções feitas")
 
+    if invalid_extent_paths and not allow_structure_fix:
+        preview = "; ".join(
+            f"linha {line_number}: {extent_path} -> {corrected_path}"
+            for line_number, extent_path, corrected_path in invalid_extent_paths[:5]
+        )
+        extra = ""
+        if len(invalid_extent_paths) > 5:
+            extra = f"; e mais {len(invalid_extent_paths) - 5} registro(s)"
+        messages.append(
+            "Arquivo de estrutura exigiria ajuste para usar o diretório de load "
+            f"{normalized_target_load_path}: {preview}{extra}"
+        )
+        messages.append("Execução real abortaria após esses ajustes; dry-run não alterou o arquivo .st")
+
     return messages
 
 
@@ -752,6 +936,14 @@ def _append_step_result(job_id, step_number, step_title, generated_path=None, ex
     _append_log(job_id, f"[DRY-RUN] Passo {step_number} - {step_title} retorno: {exit_code}")
     if generated_path:
         _append_log(job_id, f"[DRY-RUN] Resultado simulado: {generated_path}")
+
+
+def _append_dry_run_preview(job_id, message):
+    _append_log(job_id, f"[DRY-RUN][PREVIEW] {message}")
+
+
+def _append_dry_run_validation(job_id, message):
+    _append_log(job_id, f"[DRY-RUN][VALIDACAO] {message}")
 
 
 def _simulate_exit_code(step_number, command):
@@ -804,6 +996,38 @@ def _apply_load_busy_context(job_id, context, db_log, transcript_path):
     return True
 
 
+def _apply_load_busy_context_dry_run(job_id, context, db_log):
+    load_db_path = os.path.join(context.get("load_path", ""), context.get("db_name", ""))
+    if not load_db_path or not os.path.exists(f"{load_db_path}.db"):
+        db_log("Banco de destino não encontrado para validar a fase 3; preview seguirá sem busy check real")
+        return False
+
+    busy_command = f"{context.get('dlc_bin', '')}/proutil {load_db_path} -C busy"
+    rc = _run_shell_command(
+        job_id,
+        busy_command,
+        heartbeat_label=f"{context.get('db_name', '')} Dry-run verificacao do banco destino",
+    )
+    busy_info = _busy_execution_options(rc)
+    if not busy_info["valid"]:
+        if rc == 64:
+            db_log("Banco de destino em processo de inicialização; não foi possível simular db_opts da fase 3")
+        else:
+            db_log(f"Status do banco de destino não reconhecido ({rc}); não foi possível simular db_opts da fase 3")
+        return False
+
+    context.update({
+        "db_status": busy_info["db_status"],
+        "db_opts": busy_info["db_opts"],
+        "load_db_opts_checked": True,
+    })
+    if busy_info["busy_state"] == "online":
+        db_log("Banco de destino online confirmado; fase 3 usaria -b")
+    else:
+        db_log("Banco de destino offline confirmado; fase 3 usaria -b -1")
+    return True
+
+
 def _catalog_operation_name(catalog):
     steps = catalog.get("catalog", []) if isinstance(catalog, dict) else []
     for step in steps:
@@ -847,6 +1071,19 @@ def _busy_execution_options(exit_code):
     return {"db_status": "", "db_opts": "-b", "busy_state": "unknown", "valid": False}
 
 
+def _read_inventory_items(path):
+    with open(path, "r", encoding="utf-8", errors="replace") as handle:
+        lines = handle.read().splitlines()
+
+    items = []
+    for line in lines:
+        item = line.strip().lstrip("\ufeff")
+        if item:
+            items.append(item)
+
+    return items
+
+
 def _simulate_mkdir_step(job_id, step_title, target_path):
     path_exists = os.path.isdir(target_path)
     _append_log(job_id, f"[DRY-RUN] Passo 2 - {step_title} comando aplicado: mkdir -p \"{target_path}\"")
@@ -886,6 +1123,10 @@ def _run_dry_job(job_id, config, catalog):
     steps = catalog.get("catalog", []) if isinstance(catalog, dict) else []
     operation = _catalog_operation_name(catalog)
     table_action = operation.upper() if operation in ("dump", "load") else "PROCESSAMENTO"
+    load_creation_step_enabled = any(
+        step.get("step") == 2 and step.get("enabled", True)
+        for step in steps
+    )
 
     try:
         _update_state(job_id, status="running", mode="dry", started_at=_utc_now(), message="Dry-run iniciado")
@@ -919,16 +1160,28 @@ def _run_dry_job(job_id, config, catalog):
             for file_index, file_path in enumerate(matching_files, start=1):
                 db_exec_path = os.path.splitext(file_path)[0]
                 context = _build_preview_context(item, config, db_exec_path, operation=operation)
+                context["load_db_opts_checked"] = False
                 _append_log(job_id, f"[DRY-RUN] Database {file_index}/{total_files}: {context['db_path']}")
+
+                if operation == "load":
+                    prerequisite_messages = _load_prerequisite_messages(context, allow_structure_fix=False)
+                    if prerequisite_messages:
+                        for message in prerequisite_messages:
+                            _append_dry_run_validation(job_id, f"{context['db_name']} {message}")
+                        if load_creation_step_enabled:
+                            _append_dry_run_validation(job_id, f"{context['db_name']} Fase 2 ativa: esses pré-requisitos bloqueariam a execução real")
+                            _update_item(job_id, item_index - 1, status="failed", progress=100, message="Dry-run detectou bloqueio de pré-requisito")
+                            continue
+                        _append_dry_run_validation(job_id, f"{context['db_name']} Fase 2 desabilitada: pré-requisitos de criação foram reportados sem bloquear o preview")
 
                 for step in steps:
                     if not step.get("enabled", True):
                         continue
 
                     step_number = step.get("step", "?")
+                    step_title = step.get("title", f"Fase {step_number}")
                     step_kind = step.get("kind", "command")
                     command = _safe_format(step.get("command", ""), context)
-                    _append_log(job_id, f"[DRY-RUN] Comando: {command}")
 
                     if step_number == 1 and _is_busy_check_command(command):
                         busy_info = _busy_execution_options(_simulate_exit_code(step_number, command))
@@ -936,7 +1189,18 @@ def _run_dry_job(job_id, config, catalog):
                             "db_status": busy_info["db_status"],
                             "db_opts": busy_info["db_opts"],
                         })
-                        _append_log(job_id, f"[DRY-RUN] Status detectado: {_busy_status_from_exit_code(_simulate_exit_code(step_number, command))}")
+                        _append_dry_run_validation(job_id, f"Status detectado: {_busy_status_from_exit_code(_simulate_exit_code(step_number, command))}")
+
+                    if _is_load_progress_command(operation, command, context) and not context.get("load_db_opts_checked"):
+                        _append_dry_run_validation(job_id, f"{context['db_name']} Validando decisão online/offline para a fase {step_number}")
+                        _apply_load_busy_context_dry_run(
+                            job_id,
+                            context,
+                            lambda msg, _db=context["db_name"]: _append_dry_run_validation(job_id, f"{_db} {msg}"),
+                        )
+                        command = _safe_format(step.get("command", ""), context)
+
+                    _append_dry_run_preview(job_id, f"Passo {step_number} - {step_title} comando: {command}")
 
                     if step_kind == "loop":
                         loop_path = _safe_format(step.get("loop_source_path", ""), context)
@@ -944,16 +1208,15 @@ def _run_dry_job(job_id, config, catalog):
                         inventory_path = _resolve_inventory_path(loop_path, loop_file, context)
 
                         if inventory_path and os.path.exists(inventory_path):
-                            with open(inventory_path, "r", encoding="utf-8", errors="replace") as handle:
-                                items = [line.strip() for line in handle.read().splitlines() if line.strip()]
+                            items = _read_inventory_items(inventory_path)
                             for table_name in items:
                                 loop_context = dict(context)
                                 loop_context["table_name"] = table_name
                                 loop_command = _safe_format(step.get("command", ""), loop_context)
-                                _append_log(job_id, f"[DRY-RUN] {table_action} da tabela {table_name}")
-                                _append_log(job_id, f"[DRY-RUN] Comando: {loop_command}")
+                                _append_dry_run_preview(job_id, f"{table_action} da tabela {table_name}")
+                                _append_dry_run_preview(job_id, f"Comando: {loop_command}")
                         else:
-                            _append_log(job_id, "[DRY-RUN] Inventário não encontrado; simulando o loop como concluído sem erro.")
+                            _append_dry_run_validation(job_id, "Inventário não encontrado; simulando o loop como concluído sem erro.")
 
                     # O preview fica reduzido a banco + comando para evitar ruído.
 
@@ -978,6 +1241,10 @@ def _run_real_job(job_id, config, catalog):
     operation = _catalog_operation_name(catalog)
     table_action = operation.upper() if operation in ("dump", "load") else "PROCESSAMENTO"
     total_action = operation.upper() if operation in ("dump", "load") else "JOB"
+    load_creation_step_enabled = any(
+        step.get("step") == 2 and step.get("enabled", True)
+        for step in steps
+    )
 
     try:
         _update_state(job_id, status="running", mode="real", started_at=_utc_now(), message="Execução iniciada")
@@ -1019,7 +1286,7 @@ def _run_real_job(job_id, config, catalog):
                 context = _build_preview_context(item, config, db_exec_path, operation=operation)
                 context["load_db_opts_checked"] = False
 
-                if operation == "load":
+                if operation == "load" and load_creation_step_enabled:
                     prerequisite_messages = _load_prerequisite_messages(context)
                     if prerequisite_messages:
                         for message in prerequisite_messages:
@@ -1065,8 +1332,7 @@ def _run_real_job(job_id, config, catalog):
                             item_failed = True
                             break
 
-                        with open(inventory_path, "r", encoding="utf-8", errors="replace") as handle:
-                            tables = [line.strip() for line in handle.read().splitlines() if line.strip()]
+                        tables = _read_inventory_items(inventory_path)
 
                         if not tables:
                             db_log(f"Passo {step_number} - Inventário vazio")
@@ -1090,13 +1356,16 @@ def _run_real_job(job_id, config, catalog):
                                 progress=table_progress,
                                 message=f"Tabela atual: {table_name} ({table_index}/{total_tables})",
                             )
-                            db_log(f"{table_action} da tabela {table_name} - executando")
+                            if operation == "load":
+                                db_log(f"Tabela {table_name}")
+                            else:
+                                db_log(f"{table_action} da tabela {table_name} - executando")
                             transcript_path = _step_transcript_path(item, db_exec_path, step_number, f"{step_title}_{table_name}", operation=operation)
                             rc = _run_shell_command(
                                 job_id,
                                 loop_command,
                                 raw_log_path=transcript_path,
-                                heartbeat_label=f"{db_name} {table_action} da tabela {table_name} - executando",
+                                heartbeat_label=(f"{db_name} Tabela {table_name}" if operation == "load" else f"{db_name} {table_action} da tabela {table_name} - executando"),
                             )
                             if rc != 0:
                                 db_log(f"Passo {step_number} - Falhou")
@@ -1288,8 +1557,9 @@ def get_job_summary(job_id, tail_limit=DEFAULT_TAIL_LINES):
 
 
 def get_current_job_summary():
+    _reconcile_stale_active_job()
     index = _index_data()
-    job_id = index.get("active_job_id")
+    job_id = index.get("active_job_id") or index.get("last_job_id")
     if not job_id:
         return None
 
@@ -1301,12 +1571,45 @@ def get_current_job_summary():
     return summary
 
 
+def list_job_history(limit=30, tail_limit=20):
+    ensure_runtime_dirs()
+    index = _index_data()
+    active_job_id = index.get("active_job_id")
+    last_job_id = index.get("last_job_id")
+    history = []
+
+    for entry in os.listdir(JOBS_DIR):
+        job_id = (entry or "").strip()
+        if not job_id:
+            continue
+
+        summary = get_job_summary(job_id, tail_limit=tail_limit)
+        if not summary:
+            continue
+        if not summary.get("job_id"):
+            continue
+
+        summary["is_active"] = job_id == active_job_id
+        summary["is_last"] = job_id == last_job_id
+        history.append(summary)
+
+    history.sort(
+        key=lambda item: (
+            item.get("started_at") or item.get("created_at") or "",
+            item.get("updated_at") or "",
+            item.get("job_id") or "",
+        ),
+        reverse=True,
+    )
+    return history[: max(1, int(limit or 30))]
+
+
 def get_job_log(job_id):
     state = _read_state(job_id)
     if not state:
         return None
 
-    log_path = state.get("log_path", _log_path(job_id))
+    log_path = _resolve_workspace_path(state.get("log_path"), _log_path(job_id))
     if not os.path.exists(log_path):
         return ""
 
@@ -1320,7 +1623,7 @@ def get_job_log_chunk(job_id, offset=0):
     if not state:
         return None, 0
 
-    log_path = state.get("log_path", _log_path(job_id))
+    log_path = _resolve_workspace_path(state.get("log_path"), _log_path(job_id))
     if not os.path.exists(log_path):
         return "", 0
 

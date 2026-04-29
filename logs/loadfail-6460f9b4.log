@@ -1,0 +1,5 @@
+A operacao de reconstrucao de indice foi abortada. Re-execute novamente. (651)
+[ERRO] resumo da falha (rc=2):
+[ERRO] LOAD iniciado para tabela sf-registro (numero 708)
+[ERRO] LOAD entrou no processamento no registro 1, sessao 1. (6204)
+[ERRO] A operacao de reconstrucao de indice foi abortada. Re-execute novamente. (651)

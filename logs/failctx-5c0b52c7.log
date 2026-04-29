@@ -1,0 +1,4 @@
+A operacao de reconstrucao de indice foi abortada. Re-execute novamente. (651)
+[ERRO] resumo da falha (rc=1):
+[ERRO] ' '** Esta sessao esta sendo executada com o parametro -i. (512)' 'Binary Dump created on Wed Apr 29 17:47:22 2026' 'A operacao de reconstrucao de indice foi abortada. Re-execute novamente. (651)' >&2; exit 1"
+[ERRO] ' '** Esta sessao esta sendo executada com o parametro -i. (512)' 'Binary Dump created on Wed Apr 29 17:47:22 2026' 'A operacao de reconstrucao de indice foi abortada. Re-execute novamente. (651)' >&2; exit 1"

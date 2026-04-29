@@ -1,0 +1,534 @@
+[EXEC] Job criado
+[EXEC] Bancos selecionados: 2
+[EXEC] Iniciando execução real da sequência
+[EXEC] Bancos selecionados: 2
+[EXEC] Banco 1/2: /totvs/database/CON/ems2adt.db
+[EXEC] ems2adt Database 1/1: /totvs/database/CON/ems2adt
+[EXEC] ems2adt Passo 1 - Verificar banco origem
+[ERRO] comando finalizado com rc=6
+[EXEC] ems2adt Banco online confirmado
+[EXEC] ems2adt Passo 1 - Concluido...
+[EXEC] ems2adt Passo 2 - Garantir destino do dump
+[EXEC] ems2adt Passo 2 - Executando...
+[EXEC] ems2adt Passo 2 - Concluido...
+[EXEC] ems2adt Passo 3 - Dump da DF
+[EXEC] ems2adt Passo 3 - Executando...
+[EXEC] ems2adt Passo 3 - Concluido...
+[EXEC] ems2adt Passo 4 - Dump das sequences
+[EXEC] ems2adt Passo 4 - Executando...
+[EXEC] ems2adt Passo 4 - Concluido...
+[EXEC] ems2adt Passo 5 - Dump dos users
+[EXEC] ems2adt Passo 5 - Executando...
+[EXEC] ems2adt Passo 5 - Concluido...
+[EXEC] ems2adt Passo 6 - Dump rules de permissão
+[EXEC] ems2adt Passo 6 - Executando...
+[EXEC] ems2adt Passo 6 - Concluido...
+[EXEC] ems2adt Passo 7 - Inventario tabelas
+[EXEC] ems2adt Passo 7 - Executando...
+[EXEC] ems2adt Passo 7 - Concluido...
+[EXEC] ems2adt Passo 8 - Dump das tabela
+[EXEC] ems2adt Passo 8 - Lendo tables.lst
+[EXEC] ems2adt Passo 8 - Tabela inventariada: atributo_versao_raw
+[EXEC] ems2adt Passo 8 - Tabela inventariada: atrib_alerta
+[EXEC] ems2adt Passo 8 - Tabela inventariada: atrib_monitor
+[EXEC] ems2adt Passo 8 - Tabela inventariada: atrib_vrf_monitor
+[EXEC] ems2adt Passo 8 - Tabela inventariada: atrib_vrf_monitor_spool
+[EXEC] ems2adt Passo 8 - Tabela inventariada: base_dados
+[EXEC] ems2adt Passo 8 - Tabela inventariada: bco-histor-audtr
+[EXEC] ems2adt Passo 8 - Tabela inventariada: bh-period-audtr
+[EXEC] ems2adt Passo 8 - Tabela inventariada: param_audit
+[EXEC] ems2adt Passo 8 - Tabela inventariada: param_audit_extens
+[EXEC] ems2adt Passo 8 - Tabela inventariada: tabela_monitor
+[EXEC] ems2adt Passo 8 - Tabela inventariada: tabela_monitor_exc
+[EXEC] ems2adt Passo 8 - Tabela inventariada: tabela_raw_ant
+[EXEC] ems2adt Passo 8 - Tabela inventariada: tabela_raw_ant_spool
+[EXEC] ems2adt Passo 8 - Tabela inventariada: tabela_raw_new
+[EXEC] ems2adt Passo 8 - Tabela inventariada: tabela_raw_new_spool
+[EXEC] ems2adt Passo 8 - Tabela inventariada: tabela_versao_raw
+[EXEC] ems2adt Passo 8 - Tabela inventariada: tabela_vrf_monitor
+[EXEC] ems2adt Passo 8 - Tabela inventariada: tabela_vrf_monitor_spool
+[EXEC] ems2adt Passo 8 - Tabela inventariada: tab_vers_monit_extens
+[EXEC] ems2adt DUMP da tabela atributo_versao_raw - executando - 0 registros - 00:00:00
+[EXEC] ems2adt DUMP da tabela atrib_alerta - executando - 0 registros - 00:00:00
+[EXEC] ems2adt DUMP da tabela atrib_monitor - executando - 0 registros - 00:00:00
+[EXEC] ems2adt DUMP da tabela atrib_vrf_monitor - executando - 0 registros - 00:00:00
+[EXEC] ems2adt DUMP da tabela atrib_vrf_monitor_spool - executando - 0 registros - 00:00:00
+[EXEC] ems2adt DUMP da tabela base_dados - executando - 1 registros - 00:00:00
+[EXEC] ems2adt DUMP da tabela bco-histor-audtr - executando - 0 registros - 00:00:00
+[EXEC] ems2adt DUMP da tabela bh-period-audtr - executando - 0 registros - 00:00:00
+[EXEC] ems2adt DUMP da tabela param_audit - executando - 1 registros - 00:00:00
+[EXEC] ems2adt DUMP da tabela param_audit_extens - executando - 1 registros - 00:00:00
+[EXEC] ems2adt DUMP da tabela tabela_monitor - executando - 0 registros - 00:00:00
+[EXEC] ems2adt DUMP da tabela tabela_monitor_exc - executando - 0 registros - 00:00:00
+[EXEC] ems2adt DUMP da tabela tabela_raw_ant - executando - 0 registros - 00:00:00
+[EXEC] ems2adt DUMP da tabela tabela_raw_ant_spool - executando - 0 registros - 00:00:00
+[EXEC] ems2adt DUMP da tabela tabela_raw_new - executando - 0 registros - 00:00:00
+[EXEC] ems2adt DUMP da tabela tabela_raw_new_spool - executando - 0 registros - 00:00:00
+[EXEC] ems2adt DUMP da tabela tabela_versao_raw - executando - 0 registros - 00:00:00
+[EXEC] ems2adt DUMP da tabela tabela_vrf_monitor - executando - 0 registros - 00:00:00
+[EXEC] ems2adt DUMP da tabela tabela_vrf_monitor_spool - executando - 0 registros - 00:00:00
+[EXEC] ems2adt DUMP da tabela tab_vers_monit_extens - executando - 0 registros - 00:00:00
+[EXEC] ems2adt Passo 8 - Concluido...
+[EXEC] ems2adt Passo 9 - Tabanalys inicial (/totvs/database/dump/CON/ems2adt/ems2adt_tab.ini)
+[EXEC] ems2adt Passo 9 - Executando...
+[EXEC] ems2adt Passo 9 - Concluido...
+[EXEC] Tempo total de DUMP para o banco ems2adt.db: 0m12s
+[EXEC] Banco 2/2: /totvs/database/CON/emsfnd.db
+[EXEC] emsfnd Database 1/1: /totvs/database/CON/emsfnd
+[EXEC] emsfnd Passo 1 - Verificar banco origem
+[ERRO] comando finalizado com rc=6
+[EXEC] emsfnd Banco online confirmado
+[EXEC] emsfnd Passo 1 - Concluido...
+[EXEC] emsfnd Passo 2 - Garantir destino do dump
+[EXEC] emsfnd Passo 2 - Executando...
+[EXEC] emsfnd Passo 2 - Concluido...
+[EXEC] emsfnd Passo 3 - Dump da DF
+[EXEC] emsfnd Passo 3 - Executando...
+[EXEC] emsfnd Passo 3 - Concluido...
+[EXEC] emsfnd Passo 4 - Dump das sequences
+[EXEC] emsfnd Passo 4 - Executando...
+[EXEC] emsfnd Passo 4 - Concluido...
+[EXEC] emsfnd Passo 5 - Dump dos users
+[EXEC] emsfnd Passo 5 - Executando...
+[EXEC] emsfnd Passo 5 - Concluido...
+[EXEC] emsfnd Passo 6 - Dump rules de permissão
+[EXEC] emsfnd Passo 6 - Executando...
+[EXEC] emsfnd Passo 6 - Concluido...
+[EXEC] emsfnd Passo 7 - Inventario tabelas
+[EXEC] emsfnd Passo 7 - Executando...
+[EXEC] emsfnd Passo 7 - Concluido...
+[EXEC] emsfnd Passo 8 - Dump das tabela
+[EXEC] emsfnd Passo 8 - Lendo tables.lst
+[EXEC] emsfnd Passo 8 - Tabela inventariada: agenda_rpw
+[EXEC] emsfnd Passo 8 - Tabela inventariada: aplicat_disposit_mov
+[EXEC] emsfnd Passo 8 - Tabela inventariada: aplicat_disposit_mov_usuar
+[EXEC] emsfnd Passo 8 - Tabela inventariada: aplicat_dtsul
+[EXEC] emsfnd Passo 8 - Tabela inventariada: aplicat_dtsul_segur
+[EXEC] emsfnd Passo 8 - Tabela inventariada: bco_empres
+[EXEC] emsfnd Passo 8 - Tabela inventariada: bco_histor_conex
+[EXEC] emsfnd Passo 8 - Tabela inventariada: bco_histor_seq_conex
+[EXEC] emsfnd Passo 8 - Tabela inventariada: bco_timeout
+[EXEC] emsfnd Passo 8 - Tabela inventariada: cadastro_appserver
+[EXEC] emsfnd Passo 8 - Tabela inventariada: cadast_liter
+[EXEC] emsfnd Passo 8 - Tabela inventariada: cadast_msg
+[EXEC] emsfnd Passo 8 - Tabela inventariada: catal_docto_anexo
+[EXEC] emsfnd Passo 8 - Tabela inventariada: catal_img
+[EXEC] emsfnd Passo 8 - Tabela inventariada: catal_som
+[EXEC] emsfnd Passo 8 - Tabela inventariada: catal_video
+[EXEC] emsfnd Passo 8 - Tabela inventariada: configur
+[EXEC] emsfnd Passo 8 - Tabela inventariada: configur_layout_impres
+[EXEC] emsfnd Passo 8 - Tabela inventariada: configur_propried
+[EXEC] emsfnd Passo 8 - Tabela inventariada: configur_tip_imprsor
+[EXEC] emsfnd Passo 8 - Tabela inventariada: contexto_sessao_fnd
+[EXEC] emsfnd Passo 8 - Tabela inventariada: contexto_trans_fnd
+[EXEC] emsfnd Passo 8 - Tabela inventariada: criter
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dados_proteg_campo
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dados_proteg_campo_classif
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dados_proteg_campo_cond
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dados_proteg_campo_papel
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dados_proteg_classif_campo
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dados_proteg_exec_cmdo
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dados_proteg_exec_cmdo_consulta
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dados_proteg_exec_cmdo_erro
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dados_proteg_exec_cmdo_log
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dados_proteg_exec_identif_param
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dados_proteg_exec_param
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dados_proteg_exec_req
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dados_proteg_exec_vinc_param
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dados_proteg_papel
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dados_proteg_rot_campo
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dados_proteg_segur_campo
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dados_proteg_tip_cmdo
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dados_proteg_tip_docto
+[EXEC] emsfnd Passo 8 - Tabela inventariada: depto_fnd
+[EXEC] emsfnd Passo 8 - Tabela inventariada: depto_servid_exec
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dialet_idiom
+[EXEC] emsfnd Passo 8 - Tabela inventariada: docto_anexo
+[EXEC] emsfnd Passo 8 - Tabela inventariada: docto_ged_relac_rec
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dwb_rpt_param
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dwb_rpt_select
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dwb_set_list
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dwb_set_list_param
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dwb_set_list_param_aux
+[EXEC] emsfnd Passo 8 - Tabela inventariada: efeito_impres
+[EXEC] emsfnd Passo 8 - Tabela inventariada: exec_ret_chamada
+[EXEC] emsfnd Passo 8 - Tabela inventariada: extrat_vers
+[EXEC] emsfnd Passo 8 - Tabela inventariada: faixa_rpw
+[EXEC] emsfnd Passo 8 - Tabela inventariada: favorito
+[EXEC] emsfnd Passo 8 - Tabela inventariada: fluig_indic
+[EXEC] emsfnd Passo 8 - Tabela inventariada: fnd_empres
+[EXEC] emsfnd Passo 8 - Tabela inventariada: fnd_usuar_univ
+[EXEC] emsfnd Passo 8 - Tabela inventariada: funcao_configur_imprsor
+[EXEC] emsfnd Passo 8 - Tabela inventariada: gerenc_aces_usuar
+[EXEC] emsfnd Passo 8 - Tabela inventariada: grp_aplicat_dtsul
+[EXEC] emsfnd Passo 8 - Tabela inventariada: grp_usuar
+[EXEC] emsfnd Passo 8 - Tabela inventariada: HIBERNATE_UNIQUE_KEY
+[EXEC] emsfnd Passo 8 - Tabela inventariada: histor
+[EXEC] emsfnd Passo 8 - Tabela inventariada: histor_impres
+[EXEC] emsfnd Passo 8 - Tabela inventariada: histor_login
+[EXEC] emsfnd Passo 8 - Tabela inventariada: histor_senha
+[EXEC] emsfnd Passo 8 - Tabela inventariada: horar_rpw
+[EXEC] emsfnd Passo 8 - Tabela inventariada: identif_ext_recur
+[EXEC] emsfnd Passo 8 - Tabela inventariada: idioma
+[EXEC] emsfnd Passo 8 - Tabela inventariada: idiom_trad
+[EXEC] emsfnd Passo 8 - Tabela inventariada: imagem
+[EXEC] emsfnd Passo 8 - Tabela inventariada: impressora
+[EXEC] emsfnd Passo 8 - Tabela inventariada: imprsor_usuar
+[EXEC] emsfnd Passo 8 - Tabela inventariada: instan
+[EXEC] emsfnd Passo 8 - Tabela inventariada: job_exec
+[EXEC] emsfnd Passo 8 - Tabela inventariada: job_exec_agrup_histor
+[EXEC] emsfnd Passo 8 - Tabela inventariada: job_exec_histor
+[EXEC] emsfnd Passo 8 - Tabela inventariada: job_exec_prog_digita
+[EXEC] emsfnd Passo 8 - Tabela inventariada: job_exec_prog_digita_reg
+[EXEC] emsfnd Passo 8 - Tabela inventariada: job_exec_prog_histor
+[EXEC] emsfnd Passo 8 - Tabela inventariada: job_exec_prog_param
+[EXEC] emsfnd Passo 8 - Tabela inventariada: job_exec_seq_digita
+[EXEC] emsfnd Passo 8 - Tabela inventariada: job_exec_seq_digita_reg
+[EXEC] emsfnd Passo 8 - Tabela inventariada: job_exec_seq_param
+[EXEC] emsfnd Passo 8 - Tabela inventariada: job_exec_seq_prog
+[EXEC] emsfnd Passo 8 - Tabela inventariada: layout_impres
+[EXEC] emsfnd Passo 8 - Tabela inventariada: layout_impres_padr
+[EXEC] emsfnd Passo 8 - Tabela inventariada: login_integr_so
+[EXEC] emsfnd Passo 8 - Tabela inventariada: log_execution
+[EXEC] emsfnd Passo 8 - Tabela inventariada: log_exec_api
+[EXEC] emsfnd Passo 8 - Tabela inventariada: log_exec_prog_aux
+[EXEC] emsfnd Passo 8 - Tabela inventariada: log_exec_prog_dtsul
+[EXEC] emsfnd Passo 8 - Tabela inventariada: log_exec_prog_monit
+[EXEC] emsfnd Passo 8 - Tabela inventariada: log_tab_estatis
+[EXEC] emsfnd Passo 8 - Tabela inventariada: modul_dtsul
+[EXEC] emsfnd Passo 8 - Tabela inventariada: oauth2_registered_client
+[EXEC] emsfnd Passo 8 - Tabela inventariada: opc_funcao_imprsor
+[EXEC] emsfnd Passo 8 - Tabela inventariada: ord_configur_imprsor
+[EXEC] emsfnd Passo 8 - Tabela inventariada: param_basic
+[EXEC] emsfnd Passo 8 - Tabela inventariada: param_email
+[EXEC] emsfnd Passo 8 - Tabela inventariada: param_extens_ems
+[EXEC] emsfnd Passo 8 - Tabela inventariada: param_geral_btb
+[EXEC] emsfnd Passo 8 - Tabela inventariada: param_geral_sec
+[EXEC] emsfnd Passo 8 - Tabela inventariada: param_sist
+[EXEC] emsfnd Passo 8 - Tabela inventariada: pasta_favorito
+[EXEC] emsfnd Passo 8 - Tabela inventariada: ped_exec
+[EXEC] emsfnd Passo 8 - Tabela inventariada: ped_exec_param
+[EXEC] emsfnd Passo 8 - Tabela inventariada: ped_exec_param_aux
+[EXEC] emsfnd Passo 8 - Tabela inventariada: ped_exec_sel
+[EXEC] emsfnd Passo 8 - Tabela inventariada: perzdo_meta
+[EXEC] emsfnd Passo 8 - Tabela inventariada: perzdo_meta_atrib
+[EXEC] emsfnd Passo 8 - Tabela inventariada: prefer_usuar
+[EXEC] emsfnd Passo 8 - Tabela inventariada: prefer_usuar_prog
+[EXEC] emsfnd Passo 8 - Tabela inventariada: procedimento
+[EXEC] emsfnd Passo 8 - Tabela inventariada: procedure_client_info_login
+[EXEC] emsfnd Passo 8 - Tabela inventariada: proced_consult_proced
+[EXEC] emsfnd Passo 8 - Tabela inventariada: proced_relat_proced
+[EXEC] emsfnd Passo 8 - Tabela inventariada: proces_menu
+[EXEC] emsfnd Passo 8 - Tabela inventariada: proces_prog
+[EXEC] emsfnd Passo 8 - Tabela inventariada: proces_segur
+[EXEC] emsfnd Passo 8 - Tabela inventariada: produt_dtsul
+[EXEC] emsfnd Passo 8 - Tabela inventariada: prog_dtsul
+[EXEC] emsfnd Passo 8 - Tabela inventariada: prog_dtsul_dpc
+[EXEC] emsfnd Passo 8 - Tabela inventariada: prog_dtsul_ext
+[EXEC] emsfnd Passo 8 - Tabela inventariada: prog_dtsul_localid
+[EXEC] emsfnd Passo 8 - Tabela inventariada: prog_dtsul_segur
+[EXEC] emsfnd Passo 8 - Tabela inventariada: prog_dtsul_vers
+[EXEC] emsfnd Passo 8 - Tabela inventariada: prog_servid_exec
+[EXEC] emsfnd Passo 8 - Tabela inventariada: propried
+[EXEC] emsfnd Passo 8 - Tabela inventariada: reg_sessao_web
+[EXEC] emsfnd Passo 8 - Tabela inventariada: report_request
+[EXEC] emsfnd Passo 8 - Tabela inventariada: request_inform
+[EXEC] emsfnd Passo 8 - Tabela inventariada: segur_empres_usuar
+[EXEC] emsfnd Passo 8 - Tabela inventariada: segur_produt
+[EXEC] emsfnd Passo 8 - Tabela inventariada: servid_exec
+[EXEC] emsfnd Passo 8 - Tabela inventariada: servid_exec_imprsor
+[EXEC] emsfnd Passo 8 - Tabela inventariada: servid_exec_log
+[EXEC] emsfnd Passo 8 - Tabela inventariada: servid_licenc_dat
+[EXEC] emsfnd Passo 8 - Tabela inventariada: servid_rpc
+[EXEC] emsfnd Passo 8 - Tabela inventariada: sist_dtsul
+[EXEC] emsfnd Passo 8 - Tabela inventariada: som
+[EXEC] emsfnd Passo 8 - Tabela inventariada: string_ext_produt
+[EXEC] emsfnd Passo 8 - Tabela inventariada: tab_dic_dtsul
+[EXEC] emsfnd Passo 8 - Tabela inventariada: tab_livre_conver
+[EXEC] emsfnd Passo 8 - Tabela inventariada: tip_imprsor
+[EXEC] emsfnd Passo 8 - Tabela inventariada: troca_servid_exec
+[EXEC] emsfnd Passo 8 - Tabela inventariada: ui_resource
+[EXEC] emsfnd Passo 8 - Tabela inventariada: ui_resource_grp
+[EXEC] emsfnd Passo 8 - Tabela inventariada: user_access_error
+[EXEC] emsfnd Passo 8 - Tabela inventariada: usuar_basic
+[EXEC] emsfnd Passo 8 - Tabela inventariada: usuar_fav
+[EXEC] emsfnd Passo 8 - Tabela inventariada: usuar_grp_usuar
+[EXEC] emsfnd Passo 8 - Tabela inventariada: usuar_menu
+[EXEC] emsfnd Passo 8 - Tabela inventariada: usuar_menu_estrut
+[EXEC] emsfnd Passo 8 - Tabela inventariada: usuar_mestre
+[EXEC] emsfnd Passo 8 - Tabela inventariada: usuar_mestre_aux
+[EXEC] emsfnd Passo 8 - Tabela inventariada: usuar_mestre_ext
+[EXEC] emsfnd Passo 8 - Tabela inventariada: usuar_mestre_histor_senha
+[EXEC] emsfnd Passo 8 - Tabela inventariada: usuar_prefer
+[EXEC] emsfnd Passo 8 - Tabela inventariada: usuar_prefer_campo
+[EXEC] emsfnd Passo 8 - Tabela inventariada: usuar_prefer_frame
+[EXEC] emsfnd Passo 8 - Tabela inventariada: usuar_prefer_var
+[EXEC] emsfnd Passo 8 - Tabela inventariada: usuar_rec
+[EXEC] emsfnd Passo 8 - Tabela inventariada: usuar_servid_exec
+[EXEC] emsfnd Passo 8 - Tabela inventariada: video
+[EXEC] emsfnd Passo 8 - Tabela inventariada: treport_layout
+[EXEC] emsfnd Passo 8 - Tabela inventariada: treport_layout_grp_usuar
+[EXEC] emsfnd Passo 8 - Tabela inventariada: smt_msg
+[EXEC] emsfnd Passo 8 - Tabela inventariada: smt_msg_audiencia
+[EXEC] emsfnd Passo 8 - Tabela inventariada: smt_msg_conteudo
+[EXEC] emsfnd Passo 8 - Tabela inventariada: smt_msg_envio
+[EXEC] emsfnd Passo 8 - Tabela inventariada: smt_msg_historico
+[EXEC] emsfnd Passo 8 - Tabela inventariada: smt_msg_log
+[EXEC] emsfnd Passo 8 - Tabela inventariada: smt_msg_param
+[EXEC] emsfnd Passo 8 - Tabela inventariada: smt_msg_proc
+[EXEC] emsfnd Passo 8 - Tabela inventariada: smt_msg_relac_conteudo
+[EXEC] emsfnd Passo 8 - Tabela inventariada: smt_msg_relac_proc_envio
+[EXEC] emsfnd Passo 8 - Tabela inventariada: smt_msg_tipo
+[EXEC] emsfnd Passo 8 - Tabela inventariada: smt_msg_atributo
+[EXEC] emsfnd Passo 8 - Tabela inventariada: oauth2_tokens
+[EXEC] emsfnd Passo 8 - Tabela inventariada: menu_usuar
+[EXEC] emsfnd Passo 8 - Tabela inventariada: metadata_biz_schema
+[EXEC] emsfnd Passo 8 - Tabela inventariada: metadata_model
+[EXEC] emsfnd Passo 8 - Tabela inventariada: metadata_object
+[EXEC] emsfnd Passo 8 - Tabela inventariada: metadata_ui
+[EXEC] emsfnd Passo 8 - Tabela inventariada: api
+[EXEC] emsfnd Passo 8 - Tabela inventariada: api_endpoint
+[EXEC] emsfnd Passo 8 - Tabela inventariada: api_segur
+[EXEC] emsfnd Passo 8 - Tabela inventariada: api_segur_hist
+[EXEC] emsfnd Passo 8 - Tabela inventariada: api_verbo
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dta_assunto
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dta_assunto_acao
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dta_assunto_glossario
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dta_assunto_pergunta
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dta_contexto
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dta_contexto_modulo
+[EXEC] emsfnd Passo 8 - Tabela inventariada: proces_personaliza_usuar
+[EXEC] emsfnd Passo 8 - Tabela inventariada: proces_segur_usuar
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dados_integr
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dados_sincroniz_plataf
+[EXEC] emsfnd Passo 8 - Tabela inventariada: tab_sincroniz_plataf
+[EXEC] emsfnd Passo 8 - Tabela inventariada: produt_dtsul_segur
+[EXEC] emsfnd Passo 8 - Tabela inventariada: log_uso_metric
+[EXEC] emsfnd Passo 8 - Tabela inventariada: noticia
+[EXEC] emsfnd Passo 8 - Tabela inventariada: noticia_idioma
+[EXEC] emsfnd Passo 8 - Tabela inventariada: noticia_imagem
+[EXEC] emsfnd Passo 8 - Tabela inventariada: noticia_link
+[EXEC] emsfnd Passo 8 - Tabela inventariada: noticia_rotina
+[EXEC] emsfnd Passo 8 - Tabela inventariada: usuar_noticia
+[EXEC] emsfnd Passo 8 - Tabela inventariada: dta_assunto_rotina
+[EXEC] emsfnd Passo 8 - Tabela inventariada: noticia_pais
+[EXEC] emsfnd Passo 8 - Tabela inventariada: smartview_data
+[EXEC] emsfnd DUMP da tabela agenda_rpw - executando - 203 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela aplicat_disposit_mov - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela aplicat_disposit_mov_usuar - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela aplicat_dtsul - executando - 20 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela aplicat_dtsul_segur - executando - 5447 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela bco_empres - executando - 105 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela bco_histor_conex - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela bco_histor_seq_conex - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela bco_timeout - executando - 8 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela cadastro_appserver - executando - 60 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela cadast_liter - executando - 277803 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela cadast_msg - executando - 46810 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela catal_docto_anexo - executando - 6 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela catal_img - executando - 15 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela catal_som - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela catal_video - executando - 1 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela configur - executando - 54670 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela configur_layout_impres - executando - 285 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela configur_propried - executando - 217 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela configur_tip_imprsor - executando - 1782 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela contexto_sessao_fnd - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela contexto_trans_fnd - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela criter - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dados_proteg_campo - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dados_proteg_campo_classif - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dados_proteg_campo_cond - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dados_proteg_campo_papel - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dados_proteg_classif_campo - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dados_proteg_exec_cmdo - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dados_proteg_exec_cmdo_consulta - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dados_proteg_exec_cmdo_erro - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dados_proteg_exec_cmdo_log - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dados_proteg_exec_identif_param - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dados_proteg_exec_param - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dados_proteg_exec_req - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dados_proteg_exec_vinc_param - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dados_proteg_papel - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dados_proteg_rot_campo - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dados_proteg_segur_campo - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dados_proteg_tip_cmdo - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dados_proteg_tip_docto - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela depto_fnd - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela depto_servid_exec - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dialet_idiom - executando - 3 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela docto_anexo - executando - 1542 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela docto_ged_relac_rec - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dwb_rpt_param - executando - 9432 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dwb_rpt_select - executando - 1832 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dwb_set_list - executando - 506 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dwb_set_list_param - executando - 526 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dwb_set_list_param_aux - executando - 389187 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela efeito_impres - executando - 82 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela exec_ret_chamada - executando - 775961 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela extrat_vers - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela faixa_rpw - executando - 92 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela favorito - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela fluig_indic - executando - 35 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela fnd_empres - executando - 15 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela fnd_usuar_univ - executando - 6890 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela funcao_configur_imprsor - executando - 31 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela gerenc_aces_usuar - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela grp_aplicat_dtsul - executando - 14 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela grp_usuar - executando - 4512 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela HIBERNATE_UNIQUE_KEY - executando - 1 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela histor - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela histor_impres - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela histor_login - executando - 10238817 registros - 00:00:16
+[EXEC] emsfnd DUMP da tabela histor_senha - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela horar_rpw - executando - 17065 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela identif_ext_recur - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela idioma - executando - 1 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela idiom_trad - executando - 3 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela imagem - executando - 24 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela impressora - executando - 5 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela imprsor_usuar - executando - 12651 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela instan - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela job_exec - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela job_exec_agrup_histor - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela job_exec_histor - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela job_exec_prog_digita - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela job_exec_prog_digita_reg - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela job_exec_prog_histor - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela job_exec_prog_param - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela job_exec_seq_digita - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela job_exec_seq_digita_reg - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela job_exec_seq_param - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela job_exec_seq_prog - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela layout_impres - executando - 26 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela layout_impres_padr - executando - 2509 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela login_integr_so - executando - 1 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela log_execution - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela log_exec_api - executando - 1 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela log_exec_prog_aux - executando - 26153063 registros - 00:00:15
+[EXEC] emsfnd DUMP da tabela log_exec_prog_dtsul - executando - 26131706 registros - 00:00:18
+[EXEC] emsfnd DUMP da tabela log_exec_prog_monit - executando - 4118294 registros - 00:00:03
+[EXEC] emsfnd DUMP da tabela log_tab_estatis - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela modul_dtsul - executando - 230 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela oauth2_registered_client - executando - 1 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela opc_funcao_imprsor - executando - 196 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela ord_configur_imprsor - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela param_basic - executando - 1 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela param_email - executando - 1 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela param_extens_ems - executando - 1227 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela param_geral_btb - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela param_geral_sec - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela param_sist - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela pasta_favorito - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela ped_exec - executando - 1317659 registros - 00:00:02
+[EXEC] emsfnd DUMP da tabela ped_exec_param - executando - 1317659 registros - 00:00:02
+[EXEC] emsfnd DUMP da tabela ped_exec_param_aux - executando - 9690860 registros - 00:00:09
+[EXEC] emsfnd DUMP da tabela ped_exec_sel - executando - 197709 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela perzdo_meta - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela perzdo_meta_atrib - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela prefer_usuar - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela prefer_usuar_prog - executando - 29 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela procedimento - executando - 22665 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela procedure_client_info_login - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela proced_consult_proced - executando - 1466 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela proced_relat_proced - executando - 1262 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela proces_menu - executando - 56 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela proces_prog - executando - 465 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela proces_segur - executando - 142 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela produt_dtsul - executando - 3 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela prog_dtsul - executando - 35896 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela prog_dtsul_dpc - executando - 461 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela prog_dtsul_ext - executando - 22063 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela prog_dtsul_localid - executando - 1678 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela prog_dtsul_segur - executando - 92566 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela prog_dtsul_vers - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela prog_servid_exec - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela propried - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela reg_sessao_web - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela report_request - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela request_inform - executando - 1331 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela segur_empres_usuar - executando - 21985 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela segur_produt - executando - 38769 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela servid_exec - executando - 55 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela servid_exec_imprsor - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela servid_exec_log - executando - 1585272 registros - 00:00:01
+[EXEC] emsfnd DUMP da tabela servid_licenc_dat - executando - 84 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela servid_rpc - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela sist_dtsul - executando - 58 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela som - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela string_ext_produt - executando - 283497 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela tab_dic_dtsul - executando - 45 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela tab_livre_conver - executando - 3 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela tip_imprsor - executando - 30 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela troca_servid_exec - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela ui_resource - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela ui_resource_grp - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela user_access_error - executando - 108639 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela usuar_basic - executando - 5610 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela usuar_fav - executando - 91160 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela usuar_grp_usuar - executando - 446292 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela usuar_menu - executando - 11670595 registros - 00:00:20
+[EXEC] emsfnd DUMP da tabela usuar_menu_estrut - executando - 570468 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela usuar_mestre - executando - 6890 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela usuar_mestre_aux - executando - 6895 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela usuar_mestre_ext - executando - 7828 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela usuar_mestre_histor_senha - executando - 2715 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela usuar_prefer - executando - 437 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela usuar_prefer_campo - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela usuar_prefer_frame - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela usuar_prefer_var - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela usuar_rec - executando - 23941 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela usuar_servid_exec - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela video - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela treport_layout - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela treport_layout_grp_usuar - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela smt_msg - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela smt_msg_audiencia - executando - 5 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela smt_msg_conteudo - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela smt_msg_envio - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela smt_msg_historico - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela smt_msg_log - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela smt_msg_param - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela smt_msg_proc - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela smt_msg_relac_conteudo - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela smt_msg_relac_proc_envio - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela smt_msg_tipo - executando - 22 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela smt_msg_atributo - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela oauth2_tokens - executando - 358 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela menu_usuar - executando - 6748 registros - 00:00:04
+[EXEC] emsfnd DUMP da tabela metadata_biz_schema - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela metadata_model - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela metadata_object - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela metadata_ui - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela api - executando - 8 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela api_endpoint - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela api_segur - executando - 13 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela api_segur_hist - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela api_verbo - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dta_assunto - executando - 37 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dta_assunto_acao - executando - 3 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dta_assunto_glossario - executando - 703 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dta_assunto_pergunta - executando - 115 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dta_contexto - executando - 2 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dta_contexto_modulo - executando - 1 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela proces_personaliza_usuar - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela proces_segur_usuar - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dados_integr - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dados_sincroniz_plataf - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela tab_sincroniz_plataf - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela produt_dtsul_segur - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela log_uso_metric - executando - 20 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela noticia - executando - 2 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela noticia_idioma - executando - 4 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela noticia_imagem - executando - 2 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela noticia_link - executando - 2 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela noticia_rotina - executando - 6 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela usuar_noticia - executando - 2157 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela dta_assunto_rotina - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela noticia_pais - executando - 0 registros - 00:00:00
+[EXEC] emsfnd DUMP da tabela smartview_data - executando - 0 registros - 00:00:00
+[EXEC] emsfnd Passo 8 - Concluido...
+[EXEC] emsfnd Passo 9 - Tabanalys inicial (/totvs/database/dump/CON/emsfnd/emsfnd_tab.ini)
+[EXEC] emsfnd Passo 9 - Executando...
+[EXEC] Execução interrompida após reinício do serviço
+[EXEC] Execução finalizada
