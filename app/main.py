@@ -16,7 +16,7 @@ from urllib.parse import parse_qs, quote, urlparse
 
 from app.config import load_config, save_config
 from app.catalog import build_catalog_page, load_catalog, parse_catalog_form, save_catalog
-from app.jobs import get_current_job_summary, get_job_log, get_job_log_chunk, get_job_summary, list_job_history, start_dry_run_job, start_dump_job
+from app.jobs import get_current_job_summary, get_job_log, get_job_log_chunk, get_job_summary, get_job_tabanalys, list_job_history, start_dry_run_job, start_dump_job
 from app.utils import is_db_online
 from app.runner import run_command
 
@@ -76,6 +76,13 @@ function _historyPreview(job){const tail=Array.isArray(job&&job.log_tail)?job.lo
 function _renderHistoryList(items){const content=document.getElementById('history-content');const meta=document.getElementById('history-meta');if(!content||!meta)return;historyJobs=Array.isArray(items)?items:[];meta.textContent=historyJobs.length+' job(s) encontrados';if(!historyJobs.length){content.innerHTML='<div class="start-modal-loading">Nenhum job anterior encontrado.</div>';return;}content.innerHTML='<div class="history-list">'+historyJobs.map(function(job){const status=_historyStatusLabel(job);const title=((job.operation||'job').toUpperCase()+' '+(job.job_id||'' )).trim();const activeTag=job.is_active?'<span class="history-chip active">ativo</span>':'';const lastTag=job.is_last?'<span class="history-chip">ultimo</span>':'';return '<button type="button" class="history-item" onclick="openHistoryJob(\''+escapeHtml(job.job_id||'')+'\')"><span class="history-item-top"><strong>'+escapeHtml(title)+'</strong><span class="history-item-tags">'+activeTag+lastTag+'</span></span><span class="history-item-meta">'+escapeHtml(_historyOperationLabel(job))+' • '+escapeHtml(status)+' • '+escapeHtml(_historyTimeLabel(job))+'</span><span class="history-item-preview">'+escapeHtml(_historyPreview(job))+'</span></button>';}).join('')+'</div>';}
 function openHistoryModal(){const modal=document.getElementById('history-modal');const content=document.getElementById('history-content');const meta=document.getElementById('history-meta');if(!modal||!content||!meta)return;modal.classList.add('open');meta.textContent='Carregando historico de jobs...';content.innerHTML='<div class="start-modal-loading">Lendo jobs anteriores...</div>';fetch('/jobs/history',{cache:'no-store'}).then(function(r){return r.ok?r.json():[];}).then(function(items){_renderHistoryList(items);}).catch(function(err){content.innerHTML='<div class="error-box">'+escapeHtml(String(err))+'</div>';});}
 function openHistoryJob(jobId){const job=historyJobs.find(function(item){return item&&item.job_id===jobId;});if(!job||!job.job_id){alert('Job nao encontrado no historico.');return;}if(jobSource){try{jobSource.close();}catch(e){}jobSource=null;}if(_pollTimer){clearTimeout(_pollTimer);_pollTimer=null;}activeJob=job;selectedFileCount=job.selected_file_count||selectedFileCount||0;setSelectionHint((job.selected_file_count||0)+' arquivos encontrados');updateJobBadge(job,job.selected_file_count||selectedFileCount);fetch('/dump/log?job_id='+encodeURIComponent(job.job_id),{cache:'no-store'}).then(function(r){return r.ok?r.text():'';}).then(function(text){appendJobLog((text||'').split(/\r?\n/).filter(function(line){return line!=='';}),true);_setLiveLogLine(job.live_log_base,job.live_log_line);closeHistoryModal();if(job.is_active){connectJobStream(job.job_id,job.log_size||new Blob([text||'']).size||0);}}).catch(function(err){alert(String(err));});}
+"""
+
+TABANALYS_UI_SCRIPT = r"""
+function closeTabanalysModal(event){if(event&&event.target&&event.target.id!=='tabanalys-modal'){return;}const modal=document.getElementById('tabanalys-modal');if(modal){modal.classList.remove('open');}}
+function _tabanalysCountLabel(value){return value===null||value===undefined?'--':String(value);}
+function _tabanalysDatabaseMarkup(database){const rows=Array.isArray(database&&database.rows)?database.rows:[];const content=rows.length?'<div class="tabanalys-table-wrap"><table class="tabanalys-table"><thead><tr><th>Tabela</th><th>Area</th><th>Inicial</th><th>Final</th></tr></thead><tbody>'+rows.map(function(row){return '<tr><td>'+escapeHtml(row.name||'')+'</td><td>'+escapeHtml(row.area||'')+'</td><td>'+escapeHtml(_tabanalysCountLabel(row.initial_count))+'</td><td>'+escapeHtml(_tabanalysCountLabel(row.final_count))+'</td></tr>';}).join('')+'</tbody></table></div>':'<div class="start-modal-loading">Nenhum Tabanalys disponivel para este banco.</div>';return '<section class="tabanalys-db-card"><div class="tabanalys-db-head"><div><strong>'+escapeHtml(database.db_name||'')+'</strong><div class="tabanalys-db-meta">Inicial: '+escapeHtml(database.has_initial?'ok':'nao encontrado')+' • Final: '+escapeHtml(database.has_final?'ok':'nao encontrado')+'</div></div><div class="tabanalys-db-meta">'+escapeHtml(String(rows.length))+' tabela(s)</div></div>'+content+'</section>';}
+function openTabanalysModal(){const modal=document.getElementById('tabanalys-modal');const meta=document.getElementById('tabanalys-meta');const content=document.getElementById('tabanalys-content');if(!modal||!meta||!content){return;}modal.classList.add('open');meta.textContent='Carregando comparativo do Tabanalys...';content.innerHTML='<div class="start-modal-loading">Lendo Tabanalys inicial e final do job atual...</div>';const query=activeJob&&activeJob.job_id?('?job_id='+encodeURIComponent(activeJob.job_id)):'';fetch('/job/tabanalys'+query,{cache:'no-store'}).then(function(r){if(r.status===404){throw new Error('Nenhum job com Tabanalys disponivel.');}return r.json();}).then(function(payload){const databases=Array.isArray(payload&&payload.databases)?payload.databases:[];meta.textContent='Job '+escapeHtml(payload.job_id||'')+' • '+escapeHtml(String(databases.length))+' banco(s)';if(!databases.length){content.innerHTML='<div class="start-modal-loading">Nenhum banco com Tabanalys encontrado para este job.</div>';return;}content.innerHTML=databases.map(_tabanalysDatabaseMarkup).join('');}).catch(function(err){content.innerHTML='<div class="error-box">'+escapeHtml(String(err))+'</div>';});}
 """
 
 def simulate_dump(db_path):
@@ -223,6 +230,7 @@ def build_config_form(config, message=""):
 def build_home_page_button_row():
     return (
         "<div class='hero-side'>"
+        "<button type='button' class='icon-link secondary' onclick='openTabanalysModal()' title='Comparar Tabanalys' aria-label='Comparar Tabanalys'>Tabanalys</button>"
         "<button type='button' class='icon-link secondary' onclick='openHistoryModal()' title='Historico de jobs' aria-label='Historico de jobs'>Historico</button>"
         "<a class='icon-link secondary' href='/catalogo-comandos' title='Editar catálogo Dump' aria-label='Editar catálogo Dump'>Editar catalogo Dump</a>"
         "<a class='icon-link secondary' href='/catalogo-comandos-load' title='Editar catálogo Load' aria-label='Editar catálogo Load'>Editar catalogo Load</a>"
@@ -376,6 +384,17 @@ def render_html(report):
         ".history-chip.active{background:#1d4ed8;color:#eff6ff;border-color:#60a5fa}"
         ".history-item-meta{font-size:12px;color:#cbd5e1}"
         ".history-item-preview{font-size:12px;color:#e2e8f0;line-height:1.5}"
+        ".tabanalys-db-card{padding:14px;border:1px solid rgba(148,163,184,.2);border-radius:16px;background:rgba(15,23,42,.72);margin-bottom:12px}"
+        ".tabanalys-db-card:last-child{margin-bottom:0}"
+        ".tabanalys-db-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}"
+        ".tabanalys-db-head strong{display:block;color:#f8fafc;font-size:15px}"
+        ".tabanalys-db-meta{color:#cbd5e1;font-size:12px;line-height:1.5}"
+        ".tabanalys-table-wrap{overflow:auto;border:1px solid rgba(148,163,184,.18);border-radius:14px}"
+        ".tabanalys-table{width:100%;border-collapse:collapse;min-width:620px;background:#0b1220}"
+        ".tabanalys-table th,.tabanalys-table td{padding:10px 12px;border-bottom:1px solid rgba(148,163,184,.14);text-align:left;font-size:13px}"
+        ".tabanalys-table th{background:rgba(30,41,59,.96);color:#f8fafc;position:sticky;top:0}"
+        ".tabanalys-table td{color:#e2e8f0}"
+        ".tabanalys-table tr:nth-child(even) td{background:rgba(15,23,42,.72)}"
         ".explorer-meta{margin-bottom:12px;color:#cbd5e1;font-size:13px}"
         ".file-list{list-style:none;margin:0;padding:0;border:1px solid rgba(148,163,184,.28);border-radius:14px;overflow:hidden;background:#0b1220}"
         ".file-list li{padding:12px 14px;border-bottom:1px solid rgba(148,163,184,.18);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;word-break:break-all;background:rgba(15,23,42,.72);color:#f8fafc}"
@@ -441,6 +460,12 @@ def render_html(report):
         "<div id='history-content'></div>"
         "</div>"
         "</div>"
+        "<div id='tabanalys-modal' class='modal' onclick='closeTabanalysModal(event)'>"
+        "<div class='modal-card' onclick='event.stopPropagation()'>"
+        "<div class='modal-header'><div><div class='modal-title'>Comparativo do Tabanalys</div><div class='modal-subtitle' id='tabanalys-meta'></div></div><button type='button' class='close-button' onclick='closeTabanalysModal()'>Fechar</button></div>"
+        "<div id='tabanalys-content'></div>"
+        "</div>"
+        "</div>"
         "<div id='explorer-modal' class='modal' onclick='closeExplorer(event)'>"
         "<div class='modal-card' onclick='event.stopPropagation()'>"
         "<div class='modal-header'><div class='modal-title'>Arquivos encontrados</div><button type='button' class='close-button' onclick='closeExplorer()'>Fechar</button></div>"
@@ -453,6 +478,7 @@ def render_html(report):
         + DUMP_UI_SCRIPT +
         DUMP_UI_FALLBACK_SCRIPT +
         HISTORY_UI_SCRIPT +
+        TABANALYS_UI_SCRIPT +
         "</script>"
         "</div></body></html>"
     )
@@ -485,6 +511,34 @@ def serve(port):
 
             if parsed_url.path == "/jobs/history":
                 body = json.dumps(list_job_history(limit=50, tail_limit=5), ensure_ascii=False, indent=2).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+                self.send_header("Pragma", "no-cache")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
+
+            if parsed_url.path == "/job/tabanalys":
+                query = parse_qs(parsed_url.query)
+                job_id = query.get("job_id", [""])[0].strip()
+                if not job_id:
+                    current_job = get_current_job_summary()
+                    job_id = (current_job or {}).get("job_id", "")
+
+                if not job_id:
+                    self.send_response(404)
+                    self.end_headers()
+                    return
+
+                payload = get_job_tabanalys(job_id)
+                if not payload:
+                    self.send_response(404)
+                    self.end_headers()
+                    return
+
+                body = json.dumps(payload, ensure_ascii=False, indent=2).encode("utf-8")
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json; charset=utf-8")
                 self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")

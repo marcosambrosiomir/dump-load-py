@@ -23,6 +23,8 @@ PROCESS_STARTED_AT = ""
 
 _LOCK = threading.RLock()
 _ELAPSED_ONLY_LINE = re.compile(r'^\d{2}:\d{2}:\d{2}$')
+_TABANALYS_AREA_HEADER = re.compile(r'^RECORD BLOCK SUMMARY FOR AREA "([^"]+)" :(\d+)')
+_TABANALYS_TABLE_LINE = re.compile(r'^(PUB\.[^\s]+)\s+(\d+)\s+')
 
 
 _SECONDARY_ERROR_PATTERNS = (
@@ -674,6 +676,113 @@ def _database_name_from_path(db_path):
     if not normalized_path:
         return "database"
     return os.path.basename(normalized_path) or "database"
+
+
+def _job_item_db_name(item):
+    selected_file_path = (item or {}).get("selected_file_path", "")
+    if selected_file_path:
+        return os.path.splitext(os.path.basename(selected_file_path))[0]
+
+    dump_db_path = (item or {}).get("dump_db_path", "")
+    return _database_name_from_path(dump_db_path)
+
+
+def _tabanalys_paths_for_item(item):
+    db_name = _job_item_db_name(item)
+    dump_path = (item or {}).get("dump_path", "") or os.path.join("/totvs/database/dump", db_name)
+    load_path = (item or {}).get("load_path", "") or os.path.join("/totvs/database/load", db_name)
+    initial_path = os.path.join(_resolve_write_path(dump_path), db_name, f"{db_name}_tab.ini")
+    final_path = os.path.join(_resolve_write_path(load_path), f"{db_name}_tab.fim")
+    return db_name, initial_path, final_path
+
+
+def _parse_tabanalys_file(path):
+    if not path or not os.path.exists(path):
+        return {}
+
+    tables = {}
+    current_area_name = ""
+    current_area_number = ""
+    pending_table_name = None
+    pending_line = ""
+
+    with open(path, "r", encoding="utf-8", errors="replace") as handle:
+        for raw_line in handle:
+            line = raw_line.rstrip("\n")
+            stripped = line.strip()
+            if not stripped:
+                continue
+
+            area_match = _TABANALYS_AREA_HEADER.match(stripped)
+            if area_match:
+                current_area_name, current_area_number = area_match.groups()
+                pending_table_name = None
+                pending_line = ""
+                continue
+
+            candidate_line = stripped
+            if pending_table_name:
+                candidate_line = f"{pending_table_name} {stripped}"
+                pending_table_name = None
+                pending_line = ""
+
+            table_match = _TABANALYS_TABLE_LINE.match(candidate_line)
+            if table_match:
+                table_name, record_count = table_match.groups()
+                if table_name.startswith("PUB._"):
+                    continue
+                tables[table_name] = {
+                    "table_name": table_name,
+                    "area_name": current_area_name,
+                    "area_number": int(current_area_number or 0),
+                    "record_count": int(record_count),
+                }
+                continue
+
+            if stripped.startswith("PUB."):
+                pending_table_name = stripped
+                pending_line = stripped
+
+    return tables
+
+
+def get_job_tabanalys(job_id):
+    state = _read_state(job_id)
+    if not state:
+        return None
+
+    databases = []
+    for item in state.get("items", []):
+        db_name, initial_path, final_path = _tabanalys_paths_for_item(item)
+        initial_tables = _parse_tabanalys_file(initial_path)
+        final_tables = _parse_tabanalys_file(final_path)
+        table_names = sorted(set(initial_tables.keys()) | set(final_tables.keys()))
+        rows = []
+
+        for table_name in table_names:
+            initial_row = initial_tables.get(table_name, {})
+            final_row = final_tables.get(table_name, {})
+            rows.append({
+                "name": table_name,
+                "area": final_row.get("area_name") or initial_row.get("area_name") or "",
+                "area_number": final_row.get("area_number") or initial_row.get("area_number") or 0,
+                "initial_count": initial_row.get("record_count"),
+                "final_count": final_row.get("record_count"),
+            })
+
+        databases.append({
+            "db_name": db_name,
+            "initial_path": initial_path,
+            "final_path": final_path,
+            "has_initial": os.path.exists(initial_path),
+            "has_final": os.path.exists(final_path),
+            "rows": rows,
+        })
+
+    return {
+        "job_id": job_id,
+        "databases": databases,
+    }
 
 
 def _dump_destination_for_item(item, db_name):
