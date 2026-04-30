@@ -25,6 +25,9 @@ _LOCK = threading.RLock()
 _ELAPSED_ONLY_LINE = re.compile(r'^\d{2}:\d{2}:\d{2}$')
 _TABANALYS_AREA_HEADER = re.compile(r'^RECORD BLOCK SUMMARY FOR AREA "([^"]+)" :(\d+)')
 _TABANALYS_TABLE_LINE = re.compile(r'^(PUB\.[^\s]+)\s+(\d+)\s+')
+_DF_ADD_TABLE_LINE = re.compile(r'^ADD TABLE "([^"]+)"')
+_DF_ADD_INDEX_LINE = re.compile(r'^ADD INDEX "([^"]+)" ON "([^"]+)"')
+_DF_AREA_LINE = re.compile(r'^AREA "([^"]+)"')
 
 
 _SECONDARY_ERROR_PATTERNS = (
@@ -696,6 +699,12 @@ def _tabanalys_paths_for_item(item):
     return db_name, initial_path, final_path
 
 
+def _df_path_for_item(item):
+    db_name = _job_item_db_name(item)
+    dump_path = (item or {}).get("dump_path", "") or os.path.join("/totvs/database/dump", db_name)
+    return os.path.join(_resolve_write_path(dump_path), db_name, f"{db_name}.df")
+
+
 def _parse_tabanalys_file(path):
     if not path or not os.path.exists(path):
         return {}
@@ -746,6 +755,108 @@ def _parse_tabanalys_file(path):
     return tables
 
 
+def _tabanalys_table_status(initial_row, final_row):
+    has_initial = bool(initial_row)
+    has_final = bool(final_row)
+
+    if has_initial and not has_final:
+        return "warning", "Sem base final"
+
+    if has_final and not has_initial:
+        return "warning", "Sem base inicial"
+
+    initial_area = (initial_row or {}).get("area_name", "")
+    final_area = (final_row or {}).get("area_name", "")
+    if _is_schema_area(initial_area) or _is_schema_area(final_area):
+        return "warning", "Fora da area esperada"
+
+    if initial_area and final_area and initial_area != final_area:
+        return "warning", f"Mudou de area: {initial_area} -> {final_area}"
+
+    return "ok", "OK"
+
+
+def _is_schema_area(area_name):
+    normalized_area = (area_name or "").strip().lower()
+    return normalized_area in ("schema area", "schema areas")
+
+
+def _expected_index_area_for_table(table_area):
+    normalized_area = (table_area or "").strip()
+    if normalized_area in ("Schema Area", "Control Area"):
+        return normalized_area
+    if normalized_area:
+        return "Indices"
+    return ""
+
+
+def _parse_df_indexes(path):
+    if not path or not os.path.exists(path):
+        return []
+
+    rows = []
+    table_areas = {}
+    pending_table_name = None
+    pending_index = None
+
+    with open(path, "r", encoding="utf-8", errors="replace") as handle:
+        for raw_line in handle:
+            stripped = raw_line.strip()
+            if not stripped:
+                continue
+
+            table_match = _DF_ADD_TABLE_LINE.match(stripped)
+            if table_match:
+                pending_table_name = table_match.group(1)
+                pending_index = None
+                continue
+
+            index_match = _DF_ADD_INDEX_LINE.match(stripped)
+            if index_match:
+                index_name, table_name = index_match.groups()
+                pending_index = {
+                    "table_name": table_name,
+                    "index_name": index_name,
+                }
+                pending_table_name = None
+                continue
+
+            area_match = _DF_AREA_LINE.match(stripped)
+            if not area_match:
+                continue
+
+            area_name = area_match.group(1)
+            if pending_table_name:
+                table_areas[pending_table_name] = area_name
+                pending_table_name = None
+                continue
+
+            if pending_index:
+                table_name = pending_index["table_name"]
+                if table_name.startswith("_"):
+                    pending_index = None
+                    continue
+
+                table_area = table_areas.get(table_name, "")
+                expected_area = _expected_index_area_for_table(table_area)
+                index_area = area_name
+                status = "ok" if not expected_area or index_area == expected_area else "warning"
+                if _is_schema_area(table_area) or _is_schema_area(index_area):
+                    status = "warning"
+                rows.append({
+                    "table_name": table_name,
+                    "table_area": table_area,
+                    "index_name": pending_index["index_name"],
+                    "index_area": index_area,
+                    "expected_area": expected_area,
+                    "status": status,
+                })
+                pending_index = None
+
+    rows.sort(key=lambda row: (row.get("status") != "warning", row.get("table_name", ""), row.get("index_name", "")))
+    return rows
+
+
 def get_job_tabanalys(job_id):
     state = _read_state(job_id)
     if not state:
@@ -754,29 +865,39 @@ def get_job_tabanalys(job_id):
     databases = []
     for item in state.get("items", []):
         db_name, initial_path, final_path = _tabanalys_paths_for_item(item)
+        df_path = _df_path_for_item(item)
         initial_tables = _parse_tabanalys_file(initial_path)
         final_tables = _parse_tabanalys_file(final_path)
+        index_rows = _parse_df_indexes(df_path)
         table_names = sorted(set(initial_tables.keys()) | set(final_tables.keys()))
         rows = []
 
         for table_name in table_names:
             initial_row = initial_tables.get(table_name, {})
             final_row = final_tables.get(table_name, {})
+            table_status, critique = _tabanalys_table_status(initial_row, final_row)
             rows.append({
                 "name": table_name,
                 "area": final_row.get("area_name") or initial_row.get("area_name") or "",
+                "initial_area": initial_row.get("area_name") or "",
+                "final_area": final_row.get("area_name") or "",
                 "area_number": final_row.get("area_number") or initial_row.get("area_number") or 0,
                 "initial_count": initial_row.get("record_count"),
                 "final_count": final_row.get("record_count"),
+                "table_status": table_status,
+                "table_critique": critique,
             })
 
         databases.append({
             "db_name": db_name,
             "initial_path": initial_path,
             "final_path": final_path,
+            "df_path": df_path,
             "has_initial": os.path.exists(initial_path),
             "has_final": os.path.exists(final_path),
+            "has_df": os.path.exists(df_path),
             "rows": rows,
+            "index_rows": index_rows,
         })
 
     return {

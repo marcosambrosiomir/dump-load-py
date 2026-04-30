@@ -319,6 +319,209 @@ class JobsRegressionTests(unittest.TestCase):
             '{dlc_bin}/proutil {db_path} -C tabanalys > {load_path}/{db_name}_tab.ini',
         )
 
+    def test_get_job_tabanalys_compares_initial_and_final_ignoring_system_tables(self):
+        state = {
+            "job_id": "job-tab",
+            "items": [
+                {
+                    "dump_db_path": "/origem/emsfnd",
+                    "selected_file_path": "/origem/emsfnd.db",
+                    "dump_path": "/dump-root",
+                    "load_path": "/load-root",
+                }
+            ],
+        }
+        initial_tab = """
+RECORD BLOCK SUMMARY FOR AREA "Dados" :7
+Table                                    Records    Size   Min   Max  Mean                Count Factor  Factor
+PUB.cliente                                  10  100.0B    10    10    10                   10    1.0     1.0
+PUB._File                                     2   20.0B    10    10    10                    2    1.0     1.0
+"""
+        final_tab = """
+RECORD BLOCK SUMMARY FOR AREA "Dados" :7
+Table                                    Records    Size   Min   Max  Mean                Count Factor  Factor
+PUB.cliente                                  15  150.0B    10    10    10                   15    1.0     1.0
+PUB.pedido                                    3   30.0B    10    10    10                    3    1.0     1.0
+PUB._Index                                    8   80.0B    10    10    10                    8    1.0     1.0
+"""
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            dump_root = Path(temp_dir) / "dump-root" / "emsfnd"
+            load_root = Path(temp_dir) / "load-root"
+            dump_root.mkdir(parents=True)
+            load_root.mkdir(parents=True)
+            (dump_root / "emsfnd_tab.ini").write_text(initial_tab, encoding="utf-8")
+            (load_root / "emsfnd_tab.fim").write_text(final_tab, encoding="utf-8")
+
+            state["items"][0]["dump_path"] = str(Path(temp_dir) / "dump-root")
+            state["items"][0]["load_path"] = str(Path(temp_dir) / "load-root")
+
+            with patch.object(jobs, "_read_state", return_value=state), patch.object(
+                jobs,
+                "_resolve_write_path",
+                side_effect=lambda value: value,
+            ):
+                payload = jobs.get_job_tabanalys("job-tab")
+
+        self.assertEqual(payload["job_id"], "job-tab")
+        self.assertEqual(len(payload["databases"]), 1)
+        database = payload["databases"][0]
+        self.assertEqual(database["db_name"], "emsfnd")
+        self.assertTrue(database["has_initial"])
+        self.assertTrue(database["has_final"])
+        self.assertEqual(
+            database["rows"],
+            [
+                {
+                    "name": "PUB.cliente",
+                    "area": "Dados",
+                    "initial_area": "Dados",
+                    "final_area": "Dados",
+                    "area_number": 7,
+                    "initial_count": 10,
+                    "final_count": 15,
+                    "table_status": "ok",
+                    "table_critique": "OK",
+                },
+                {
+                    "name": "PUB.pedido",
+                    "area": "Dados",
+                    "initial_area": "",
+                    "final_area": "Dados",
+                    "area_number": 7,
+                    "initial_count": None,
+                    "final_count": 3,
+                    "table_status": "warning",
+                    "table_critique": "Sem base inicial",
+                },
+            ],
+        )
+
+    def test_get_job_tabanalys_includes_index_analysis_from_df(self):
+        state = {
+            "job_id": "job-index",
+            "items": [
+                {
+                    "dump_db_path": "/origem/emsfnd",
+                    "selected_file_path": "/origem/emsfnd.db",
+                    "dump_path": "/dump-root",
+                    "load_path": "/load-root",
+                }
+            ],
+        }
+        final_tab = """
+RECORD BLOCK SUMMARY FOR AREA "Dados" :7
+Table                                    Records    Size   Min   Max  Mean                Count Factor  Factor
+PUB.cliente                                  15  150.0B    10    10    10                   15    1.0     1.0
+"""
+
+        df_text = """
+ADD TABLE "cliente"
+    AREA "Dados"
+ADD INDEX "pk_cliente" ON "cliente"
+    AREA "Indices"
+ADD INDEX "ix_cliente_errado" ON "cliente"
+    AREA "Schema Area"
+ADD TABLE "api"
+    AREA "Schema Area"
+ADD INDEX "pk_api" ON "api"
+    AREA "Schema Area"
+ADD TABLE "_File"
+    AREA "Schema Area"
+ADD INDEX "_File-idx" ON "_File"
+    AREA "Schema Area"
+"""
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            dump_root = Path(temp_dir) / "dump-root" / "emsfnd"
+            load_root = Path(temp_dir) / "load-root"
+            dump_root.mkdir(parents=True)
+            load_root.mkdir(parents=True)
+            (dump_root / "emsfnd.df").write_text(df_text, encoding="utf-8")
+            (load_root / "emsfnd_tab.fim").write_text(final_tab, encoding="utf-8")
+
+            state["items"][0]["dump_path"] = str(Path(temp_dir) / "dump-root")
+            state["items"][0]["load_path"] = str(Path(temp_dir) / "load-root")
+
+            with patch.object(jobs, "_read_state", return_value=state), patch.object(
+                jobs,
+                "_resolve_write_path",
+                side_effect=lambda value: value,
+            ):
+                payload = jobs.get_job_tabanalys("job-index")
+
+        database = payload["databases"][0]
+        self.assertTrue(database["has_df"])
+        self.assertEqual(
+            database["index_rows"],
+            [
+                {
+                    "table_name": "api",
+                    "table_area": "Schema Area",
+                    "index_name": "pk_api",
+                    "index_area": "Schema Area",
+                    "expected_area": "Schema Area",
+                    "status": "warning",
+                },
+                {
+                    "table_name": "cliente",
+                    "table_area": "Dados",
+                    "index_name": "ix_cliente_errado",
+                    "index_area": "Schema Area",
+                    "expected_area": "Indices",
+                    "status": "warning",
+                },
+                {
+                    "table_name": "cliente",
+                    "table_area": "Dados",
+                    "index_name": "pk_cliente",
+                    "index_area": "Indices",
+                    "expected_area": "Indices",
+                    "status": "ok",
+                },
+            ],
+        )
+
+    def test_get_job_tabanalys_marks_schema_area_as_out_of_expected_area(self):
+        state = {
+            "job_id": "job-schema",
+            "items": [
+                {
+                    "dump_db_path": "/origem/emsfnd",
+                    "selected_file_path": "/origem/emsfnd.db",
+                    "dump_path": "/dump-root",
+                    "load_path": "/load-root",
+                }
+            ],
+        }
+        initial_tab = """
+RECORD BLOCK SUMMARY FOR AREA "Schema Area" :6
+Table                                    Records    Size   Min   Max  Mean                Count Factor  Factor
+PUB.api                                       10  100.0B    10    10    10                   10    1.0     1.0
+"""
+        final_tab = initial_tab
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            dump_root = Path(temp_dir) / "dump-root" / "emsfnd"
+            load_root = Path(temp_dir) / "load-root"
+            dump_root.mkdir(parents=True)
+            load_root.mkdir(parents=True)
+            (dump_root / "emsfnd_tab.ini").write_text(initial_tab, encoding="utf-8")
+            (load_root / "emsfnd_tab.fim").write_text(final_tab, encoding="utf-8")
+
+            state["items"][0]["dump_path"] = str(Path(temp_dir) / "dump-root")
+            state["items"][0]["load_path"] = str(Path(temp_dir) / "load-root")
+
+            with patch.object(jobs, "_read_state", return_value=state), patch.object(
+                jobs,
+                "_resolve_write_path",
+                side_effect=lambda value: value,
+            ):
+                payload = jobs.get_job_tabanalys("job-schema")
+
+        self.assertEqual(payload["databases"][0]["rows"][0]["table_status"], "warning")
+        self.assertEqual(payload["databases"][0]["rows"][0]["table_critique"], "Fora da area esperada")
+
 
 if __name__ == "__main__":
     unittest.main()
